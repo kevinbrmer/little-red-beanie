@@ -14,7 +14,7 @@ const COLORS: { hex: string; hsl: string; label: string }[] = [
 
 export default function ColorPalette({ onPick, selected }: Props) {
   return (
-    <div className="flex flex-wrap justify-center gap-5">
+    <div className="flex flex-wrap items-end justify-center gap-7">
       {COLORS.map((c) => {
         const isSelected = selected === c.hex
         return (
@@ -22,16 +22,43 @@ export default function ColorPalette({ onPick, selected }: Props) {
             key={c.hex}
             type="button"
             onClick={() => onPick(c.hex, c.hsl)}
-            className="relative h-16 w-16 rounded-full transition-transform duration-200 hover:scale-105 focus:outline-none active:scale-95"
-            style={{
-              backgroundColor: c.hex,
-              boxShadow: isSelected
-                ? '0 0 0 3px var(--color-paper), 0 0 0 4px var(--color-old-gold), 0 4px 12px rgba(31, 27, 22, 0.18), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.12)'
-                : '0 3px 8px rgba(31, 27, 22, 0.16), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -3px 6px rgba(0, 0, 0, 0.10)',
-            }}
+            className="group flex flex-col items-center gap-3 focus:outline-none"
             aria-label={c.label}
             aria-pressed={isSelected}
-          />
+          >
+            <span
+              className="relative flex h-[72px] w-[72px] items-center justify-center transition-transform duration-300 ease-[cubic-bezier(.4,0,.2,1)] group-hover:-translate-y-0.5 group-active:scale-95"
+            >
+              {/* Selection ring — hairline gold at a 6px gap (brooch look) */}
+              <span
+                aria-hidden="true"
+                className="absolute -inset-[7px] rounded-full transition-opacity duration-300"
+                style={{
+                  opacity: isSelected ? 1 : 0,
+                  border: '1px solid var(--color-old-gold)',
+                }}
+              />
+              {/* Color disc — flat, single hairline edge */}
+              <span
+                aria-hidden="true"
+                className="h-full w-full rounded-full"
+                style={{
+                  backgroundColor: c.hex,
+                  boxShadow:
+                    'inset 0 0 0 1px rgba(31, 27, 22, 0.10), 0 1px 2px rgba(31, 27, 22, 0.06)',
+                }}
+              />
+            </span>
+            <span
+              className="text-[10px] uppercase tracking-[0.30em] transition-colors duration-300"
+              style={{
+                color: isSelected ? 'var(--color-ink)' : 'var(--color-ink-soft)',
+                opacity: isSelected ? 1 : 0.6,
+              }}
+            >
+              {c.label}
+            </span>
+          </button>
         )
       })}
     </div>

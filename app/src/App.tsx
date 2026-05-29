@@ -84,10 +84,10 @@ export default function App() {
       <AnimatePresence mode="wait">
         <motion.div
           key={phase}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.5, ease: EDITORIAL_EASE }}
+          initial={{ opacity: 0, y: 14, scale: 0.995 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.998 }}
+          transition={{ duration: 0.95, ease: EDITORIAL_EASE }}
           className="flex h-full w-full items-center justify-center"
         >
           <PhaseComponent />

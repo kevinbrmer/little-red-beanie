@@ -1,6 +1,14 @@
 Iran sea images — Pexels (free use, no attribution required, attribution appreciated)
 ================================================================================
 
+sea_hero.jpg  (USED in Phase 5 Stage 5b — single hero image, no people)
+  Photographer: Francesco Ungaro
+  Source: https://www.pexels.com/photo/10034591/
+  Pexels ID: 10034591
+  Description: Calm ocean waves reflecting a golden sunset, no people.
+
+— Legacy multi-slide assets below are kept as backup but no longer used in v1 —
+
 sea_01.jpg
   Photographer: Nazila Azimzada
   Source: https://www.pexels.com/photo/man-fishing-with-his-son-13744247/
