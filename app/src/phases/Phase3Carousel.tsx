@@ -39,9 +39,13 @@ export default function Phase3Carousel() {
     setTapped(true)
     tapFace(faceNow)
     sendCtxUpdate()
+    // Guard against double-advance: if Opus has already moved the phase
+    // forward via advance_phase, this timer must not pull the user back.
     const t = setTimeout(() => {
-      setPhase(4)
-      sendCtxUpdate()
+      if (useAppStore.getState().phase === 3) {
+        setPhase(4)
+        sendCtxUpdate()
+      }
     }, 2000)
     return () => clearTimeout(t)
   }

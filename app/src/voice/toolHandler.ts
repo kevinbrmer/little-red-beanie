@@ -21,12 +21,17 @@ interface MarkEscalationInput {
 export const toolHandlers = {
   advance_phase: async (input: AdvancePhaseInput): Promise<string> => {
     const s = useAppStore.getState()
-    const next = (s.phase + 1) as 1 | 2 | 3 | 4 | 5
+    // Clamp to 5 so a mis-fire from Phase 5 cannot push phase=6 and crash
+    // the React tree (phaseComponents[6] is undefined).
+    const next = Math.min(5, s.phase + 1) as 1 | 2 | 3 | 4 | 5
     console.log(`[tool] advance_phase`, input, `→ phase ${next}`)
+    // Reset childWords on every phase transition so STT from a prior phase
+    // (e.g. Phase 1 age "eight") does not leak into the next phase's CTX
+    // and trigger a stale advance_phase(topic=...) the moment it mounts.
     if (input.topic) {
-      useAppStore.setState({ topic: input.topic, phase: next })
+      useAppStore.setState({ topic: input.topic, phase: next, childWords: '' })
     } else {
-      useAppStore.setState({ phase: next })
+      useAppStore.setState({ phase: next, childWords: '' })
     }
     return 'ok'
   },

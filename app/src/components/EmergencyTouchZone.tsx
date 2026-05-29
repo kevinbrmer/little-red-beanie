@@ -11,7 +11,8 @@ export default function EmergencyTouchZone() {
       const s = useAppStore.getState()
       const next = Math.min(5, s.phase + 1) as 1 | 2 | 3 | 4 | 5
       console.warn(`[emergency-advance] ${s.phase} → ${next}`)
-      useAppStore.setState({ phase: next })
+      // Reset childWords so prior-phase STT does not leak into the next CTX
+      useAppStore.setState({ phase: next, childWords: '' })
     }, LONG_PRESS_MS)
   }
 

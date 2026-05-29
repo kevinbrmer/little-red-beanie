@@ -16,8 +16,12 @@ export default function Phase4Question() {
     sendCtxUpdate()
   }, [])
 
-  // Reset silence counter whenever the child says something new
+  // Reset silence counter whenever the child says something new.
+  // The trigger is the external STT update via childWords — that's an
+  // external-system sync, not a cascading render, so the rule's intent
+  // is satisfied even though the lint can't tell.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs UI counter to external STT signal
     setSecs(0)
     useAppStore.setState({ silenceSecs: 0 })
   }, [childWords])

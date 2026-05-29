@@ -27,10 +27,14 @@ export default function Phase2Coloring() {
     if (!color || filled) return
     setFilled(true)
     finishColoring()
-    // CSS transition is 1s; advance after 2.5s so puppet can say "great job"
+    // CSS transition is 1s; advance after 2.5s so puppet can say "great job".
+    // Guard against double-advance: if Opus has already moved the phase
+    // forward via advance_phase, this timer must not pull the user back.
     const t = setTimeout(() => {
-      setPhase(3)
-      sendCtxUpdate()
+      if (useAppStore.getState().phase === 2) {
+        setPhase(3)
+        sendCtxUpdate()
+      }
     }, 2500)
     return () => clearTimeout(t)
   }
