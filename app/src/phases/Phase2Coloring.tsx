@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate } from '../voice/elevenlabs'
+import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
 import ColorPalette from '../components/ColorPalette'
 
@@ -16,9 +16,9 @@ export default function Phase2Coloring() {
 
   const [filled, setFilled] = useState(false)
 
-  // On mount: tell Opus we're in Phase 2 with no color yet
+  // On mount: force the agent to speak the Phase 2 entry line
   useEffect(() => {
-    sendCtxUpdate()
+    triggerPhaseEntry()
   }, [])
 
   // When color picked, send CTX update so Opus says the confirmation line

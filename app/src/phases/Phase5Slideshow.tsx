@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate } from '../voice/elevenlabs'
+import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
 import { startAmbientAudio, stopAmbientAudio } from '../voice/audioFallback'
 import KimiSilhouette from '../components/KimiSilhouette'
 
@@ -20,9 +20,9 @@ export default function Phase5Slideshow() {
   const offerMade = useAppStore((s) => s.offerMade)
   const setOfferMade = useAppStore((s) => s.setOfferMade)
 
-  // Stage 5a → 5b transition: Opus calls show_assets, activeAssets populates.
+  // Stage 5a → 5b transition: agent calls show_assets, activeAssets populates.
   useEffect(() => {
-    sendCtxUpdate()
+    triggerPhaseEntry()
     const t = setTimeout(() => {
       setOfferMade(true)
       sendCtxUpdate()

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate } from '../voice/elevenlabs'
+import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
 
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
@@ -14,9 +14,9 @@ export default function Phase4Question() {
 
   const [secs, setSecs] = useState(0)
 
-  // Initial CTX
+  // Force the agent to speak the Phase 4 entry question
   useEffect(() => {
-    sendCtxUpdate()
+    triggerPhaseEntry()
   }, [])
 
   // Reset silence counter whenever the child says something new.

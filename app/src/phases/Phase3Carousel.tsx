@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore, type FaceExpression } from '../state/appStore'
-import { sendCtxUpdate } from '../voice/elevenlabs'
+import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
 
 const CYCLE: FaceExpression[] = ['happy', 'surprised', 'scared', 'sad']
@@ -18,10 +18,10 @@ export default function Phase3Carousel() {
 
   const [tapped, setTapped] = useState(false)
 
-  // Initial face + initial CTX
+  // Initial face + force the agent to speak the Phase 3 bridge line
   useEffect(() => {
     cycleFace(CYCLE[0])
-    sendCtxUpdate()
+    triggerPhaseEntry()
   }, [cycleFace])
 
   // Cycle face every 3s while not yet tapped

@@ -101,8 +101,9 @@ export async function stopVoiceSession() {
 }
 
 /**
- * Send the current CTX header to the agent. Call this when the app
- * advances phases or detects a salient UI event that Opus needs to know.
+ * Send the current CTX header to the agent. Use this for in-phase
+ * state updates (color picked, face tapped, child started speaking) —
+ * it injects context but does NOT force the agent to take a turn.
  */
 export function sendCtxUpdate() {
   if (!conversation) return
@@ -110,4 +111,23 @@ export function sendCtxUpdate() {
   const ctx = buildCtxHeader(s)
   console.log('[ctx →]', ctx)
   conversation.sendContextualUpdate(ctx)
+}
+
+/**
+ * Force the agent to take a turn for the current phase's entry behavior.
+ * sendContextualUpdate alone does NOT trigger a turn, so the puppet would
+ * just stay silent after a phase advance unless the child happens to speak.
+ * We sync the CTX, then send a tiny user-message marker that the system
+ * prompt is told to interpret as "open this phase per the playbook" and
+ * never to speak aloud.
+ *
+ * Call this from a phase component's mount useEffect.
+ */
+export function triggerPhaseEntry() {
+  if (!conversation) return
+  const s = useAppStore.getState()
+  const ctx = buildCtxHeader(s)
+  console.log('[phase-entry →]', `phase ${s.phase}`)
+  conversation.sendContextualUpdate(ctx)
+  conversation.sendUserMessage(`(phase ${s.phase} entry)`)
 }
