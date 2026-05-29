@@ -70,11 +70,21 @@ export async function startVoiceSession() {
 
       if (source !== 'user') return
 
-      // Filter STT noise. ElevenLabs emits a `user_transcript` event on every
-      // detected turn end — including push-to-talk presses that produced no
-      // real speech, the puppet's own TTS bleed at very low confidence, and
-      // breath/ums. Without this guard a half-second mic-open with nothing
-      // said advances a phase by itself.
+      // FILTER 1 — our own phase-entry trigger.
+      // triggerPhaseEntry() calls conversation.sendUserMessage("(phase N
+      // entry)") to force a turn. ElevenLabs faithfully echoes that back
+      // as a user_transcript event — and without this filter the fixed-
+      // scenario logic below treats it as Kimi speaking, immediately
+      // sets color=black / face=sad / etc., and the demo races itself.
+      if (/^\s*\(phase \d+ entry\)\s*$/i.test(message)) {
+        console.log('[user-ignored] phase-entry trigger echo')
+        return
+      }
+
+      // FILTER 2 — empty / breath / um turns.
+      // ElevenLabs emits a user_transcript on every detected turn end,
+      // including half-second mic-opens with nothing said and stray
+      // breath sounds. Strip trailing punctuation, require >=2 chars.
       const trimmed = message.trim().replace(/[.\s,…!?]+$/g, '')
       if (trimmed.length < 2) {
         console.log('[user-ignored] empty or too short:', JSON.stringify(message))
