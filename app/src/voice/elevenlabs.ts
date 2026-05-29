@@ -94,43 +94,68 @@ export async function startVoiceSession() {
       const s = useAppStore.getState()
       useAppStore.getState().setChildWords(message)
 
-      // FIXED-SCENARIO RULE (pitch-variante v1.0). Every Kimi voice turn is a
-      // confirmation pulse — the STT content is logged but never read. Each
-      // branch is idempotent (`!field` guard) so a second push-to-talk in
-      // the same phase does not double-advance or overwrite.
+      // App reads what Kimi actually said. Sonnet's Hard Rule #11 still
+      // hard-codes the spoken replies (always "Kimi", "eight", "black",
+      // "sad", "I miss my home in Iran", "yes") regardless of what the
+      // CTX or transcript shows, so misreads in this layer are corrected
+      // in the voice layer above.
       //
-      //   Phase 1 step 1 (no name) → name = "Kimi"
-      //   Phase 1 step 2 (no age)  → age  = 8
-      //   Phase 2 (no color)       → color = black
-      //   Phase 3 (no tap)         → face = sad
-      //   Phase 4 (no topic)       → child_words = "I miss my home in Iran"
-      //   Phase 5 (no assets)      → child_words = "yes", deferred set 5b
+      // We only branch on what Kimi said in Phase 1 (name + age, needed
+      // to gate the Phase 1 → 2 advance) and Phase 2 (color word, needed
+      // to fill the silhouette in the right swatch). Phases 3-5 just
+      // capture the transcript and let the per-phase useEffects in the
+      // React components handle the timing.
       if (s.phase === 1) {
         if (!s.name) {
-          useAppStore.getState().setName('Kimi')
+          // First word, stripped to letters. Hard Rule #11 ensures the
+          // puppet replies "Nice to meet you, Kimi." regardless.
+          const first = message.trim().split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '')
+          if (first && first.length >= 2) {
+            useAppStore.getState().setName(first)
+          }
         } else if (!s.age) {
-          useAppStore.getState().setAge(8)
+          const wordToNum: Record<string, number> = {
+            six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+          }
+          const num = message.match(/\b(\d{1,2})\b/)?.[1]
+          if (num) {
+            useAppStore.getState().setAge(parseInt(num))
+          } else {
+            const lower = message.toLowerCase()
+            for (const [w, n] of Object.entries(wordToNum)) {
+              if (lower.includes(w)) {
+                useAppStore.getState().setAge(n)
+                break
+              }
+            }
+          }
         }
       } else if (s.phase === 2 && !s.color) {
-        useAppStore.getState().pickColor('#1F1B16', 'hsl(30, 6%, 10%)', 'black')
-      } else if (s.phase === 3 && !s.tappedFace) {
-        useAppStore.getState().tapFace('sad')
-      } else if (s.phase === 4 && !s.topic) {
-        useAppStore.getState().setChildWords('I miss my home in Iran')
-      } else if (s.phase === 5 && s.activeAssets.length === 0) {
-        useAppStore.getState().setChildWords('yes')
-        setTimeout(() => {
-          const cur = useAppStore.getState()
-          if (cur.phase === 5 && cur.activeAssets.length === 0) {
-            cur.setActiveAssets(
-              ['iran_landscape_caspian_shore_02'],
-              ['audio_sea_waves_01', 'audio_iran_music_traditional_01'],
-            )
+        // Match against the 6-swatch palette + common synonyms. First hit
+        // wins; the matched name is what shows in the CTX (`color=black`).
+        const VOICE_COLORS: Array<[RegExp, string, string, string]> = [
+          [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)',   'black' ],
+          [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)',   'red'   ],
+          [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)',  'gold'  ],
+          [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)', 'green' ],
+          [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)', 'blue'  ],
+          [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)', 'plum'  ],
+        ]
+        for (const [re, hex, hsl, name] of VOICE_COLORS) {
+          if (re.test(message)) {
+            useAppStore.getState().pickColor(hex, hsl, name)
+            return
           }
-        }, 2500)
-      } else {
-        console.log('[user-ignored] phase already advanced past this step')
+        }
+        console.log('[user-input] no color word matched in:', JSON.stringify(message))
       }
+      // Phase 3: face is chosen by touch, not voice. The transcript above
+      //   is still stored in childWords but does not advance the page.
+      // Phase 4: childWords is what drives the auto-advance to Phase 5
+      //   (see Phase4Question useEffect).
+      // Phase 5: childWords is the consent. Sonnet's show_assets tool
+      //   turns Stage 5a → 5b; Phase5Slideshow has a watchdog if it
+      //   doesn't fire.
     },
   })
 

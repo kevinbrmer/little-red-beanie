@@ -32,6 +32,29 @@ export default function Phase5Slideshow() {
 
   const inStage5b = activeAssets.length > 0
 
+  // Watchdog: once the offer is out AND Kimi has spoken her consent
+  // (childWords landed), wait 6s for Sonnet's show_assets to fire. If it
+  // never does, set the assets ourselves so the pitch does not hang on a
+  // missed tool call.
+  const childWords = useAppStore((s) => s.childWords)
+  const setActiveAssets = useAppStore((s) => s.setActiveAssets)
+  useEffect(() => {
+    if (inStage5b) return
+    if (!offerMade) return
+    if (!childWords) return
+    const t = setTimeout(() => {
+      const cur = useAppStore.getState()
+      if (cur.phase === 5 && cur.activeAssets.length === 0) {
+        console.log('[phase 5 watchdog] forcing Stage 5b — show_assets was not called')
+        setActiveAssets(
+          ['iran_landscape_caspian_shore_02'],
+          ['audio_sea_waves_01', 'audio_iran_music_traditional_01'],
+        )
+      }
+    }, 6000)
+    return () => clearTimeout(t)
+  }, [inStage5b, offerMade, childWords, setActiveAssets])
+
   useEffect(() => {
     if (!inStage5b) return
     const hasAmbient = activeAudio.some((id) => AMBIENT_AUDIO_IDS.includes(id))
