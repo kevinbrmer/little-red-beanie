@@ -6,6 +6,7 @@ import Phase3Carousel from './phases/Phase3Carousel'
 import Phase4Question from './phases/Phase4Question'
 import Phase5Slideshow from './phases/Phase5Slideshow'
 import EmergencyTouchZone from './components/EmergencyTouchZone'
+import EscalationGlow from './components/EscalationGlow'
 
 const phaseComponents = {
   1: Phase1Onboarding,
@@ -41,6 +42,7 @@ export default function App() {
     >
       <PhaseComponent />
       <EmergencyTouchZone />
+      <EscalationGlow />
     </div>
   )
 }
