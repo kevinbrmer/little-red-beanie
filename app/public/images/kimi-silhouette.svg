@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="100%" height="100%">
+  <!-- hair: always dark, behind everything -->
+  <g id="hair">
+    <path d="M 130 120 Q 110 80 200 70 Q 290 80 270 120 Q 280 100 280 150 L 270 180 Q 200 160 130 180 L 120 150 Q 120 100 130 120 Z" fill="#1a1a1a"/>
+  </g>
+
+  <!-- skin: face + neck + hands -->
+  <g id="skin">
+    <ellipse cx="200" cy="170" rx="60" ry="70" fill="#e8b896"/>
+    <rect x="180" y="225" width="40" height="30" fill="#e8b896"/>
+    <circle cx="120" cy="380" r="18" fill="#e8b896"/>
+    <circle cx="280" cy="380" r="18" fill="#e8b896"/>
+  </g>
+
+  <!-- clothing: this is what gets colored -->
+  <g id="clothing">
+    <path d="M 145 240 L 255 240 L 290 380 L 320 560 L 80 560 L 110 380 Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="3"/>
+    <path d="M 145 245 L 105 380 L 135 380 L 165 250 Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="3"/>
+    <path d="M 255 245 L 295 380 L 265 380 L 235 250 Z" fill="#ffffff" stroke="#1a1a1a" stroke-width="3"/>
+  </g>
+
+  <!-- face slot: React replaces the inner SVG -->
+  <g id="face-slot"/>
+</svg>
