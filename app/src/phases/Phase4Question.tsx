@@ -12,6 +12,7 @@ export default function Phase4Question() {
   const tappedFace = useAppStore((s) => s.tappedFace)
   const childWords = useAppStore((s) => s.childWords)
 
+  const setPhase = useAppStore((s) => s.setPhase)
   const [secs, setSecs] = useState(0)
 
   // Force the agent to speak the Phase 4 entry question
@@ -19,15 +20,22 @@ export default function Phase4Question() {
     triggerPhaseEntry()
   }, [])
 
-  // Reset silence counter whenever the child says something new.
-  // The trigger is the external STT update via childWords — that's an
-  // external-system sync, not a cascading render, so the rule's intent
-  // is satisfied even though the lint can't tell.
+  // When child_words lands (voice path: deterministically set to
+  // "I miss my home in Iran"), set the topic, give the puppet room to
+  // speak her validation, then advance to Phase 5.
   useEffect(() => {
+    if (!childWords) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs UI counter to external STT signal
     setSecs(0)
-    useAppStore.setState({ silenceSecs: 0 })
-  }, [childWords])
+    useAppStore.setState({ silenceSecs: 0, topic: childWords })
+    sendCtxUpdate()
+    const t = setTimeout(() => {
+      if (useAppStore.getState().phase === 4) {
+        setPhase(5)
+      }
+    }, 5000)
+    return () => clearTimeout(t)
+  }, [childWords, setPhase])
 
   // Tick every second; trigger reopener at 15s; refresh CTX at 40s for null-topic advance
   useEffect(() => {

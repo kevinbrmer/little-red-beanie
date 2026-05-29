@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore, type FaceExpression } from '../state/appStore'
 import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
@@ -16,7 +16,8 @@ export default function Phase3Carousel() {
   const setPhase = useAppStore((s) => s.setPhase)
   const faceNow = useAppStore((s) => s.faceNow)
 
-  const [tapped, setTapped] = useState(false)
+  const tappedFace = useAppStore((s) => s.tappedFace)
+  const tapped = tappedFace !== null
 
   // Initial face + force the agent to speak the Phase 3 bridge line
   useEffect(() => {
@@ -36,21 +37,23 @@ export default function Phase3Carousel() {
     return () => clearInterval(interval)
   }, [tapped, cycleFace])
 
-  const handleTap = () => {
-    if (tapped) return
-    setTapped(true)
-    tapFace(faceNow)
+  // When the face is selected (voice or touch), give the puppet a beat and
+  // then advance to Phase 4. The voice path sets tapped_face=sad directly;
+  // the touch path goes through handleTap below.
+  useEffect(() => {
+    if (!tappedFace) return
     sendCtxUpdate()
-    // Give Opus room to finish "You picked this one, Kimi." before we cut.
-    // Guard against double-advance: if Opus has already moved the phase
-    // forward via advance_phase, this timer must not pull the user back.
     const t = setTimeout(() => {
       if (useAppStore.getState().phase === 3) {
         setPhase(4)
-        sendCtxUpdate()
       }
     }, 3500)
     return () => clearTimeout(t)
+  }, [tappedFace, setPhase])
+
+  const handleTap = () => {
+    if (tapped) return
+    tapFace(faceNow)
   }
 
   return (

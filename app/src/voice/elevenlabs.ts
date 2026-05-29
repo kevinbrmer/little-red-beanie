@@ -69,36 +69,43 @@ export async function startVoiceSession() {
       if (source === 'user') {
         const s = useAppStore.getState()
         useAppStore.getState().setChildWords(message)
+        // FIXED-SCENARIO RULE (pitch-variante v1.0): every spoken turn from
+        // Kimi is treated as confirmation of the next scripted step. The STT
+        // content is logged for debugging but NEVER read or used to branch.
+        // This is the only way to keep the demo stable against background
+        // audio, mishearing, and accent.
+        //
+        //   Phase 1 (no name)  → name = "Kimi"
+        //   Phase 1 (no age)   → age  = 8
+        //   Phase 2 (no color) → color = black
+        //   Phase 3 (no tap)   → face = sad
+        //   Phase 4            → child_words = "I miss my home in Iran"
+        //   Phase 5 stage 5a   → child_words = "yes", then auto-trigger 5b
         if (s.phase === 1) {
-          // FIXED-SCENARIO RULE: For the pitch demo, Kimi (age 8) is the only
-          // child the puppet ever meets. We treat any speech that arrives in
-          // Phase 1 as confirmation of either step in the onboarding script —
-          // never reading the spoken content. This frees the demo from STT
-          // noise (background lectures, ambient audio) and keeps the puppet
-          // saying "Kimi" / "eight" consistently.
           if (!s.name) {
             useAppStore.getState().setName('Kimi')
           } else if (!s.age) {
             useAppStore.getState().setAge(8)
           }
         } else if (s.phase === 2 && !s.color) {
-          // Voice-pick of a clothing color: match the spoken word against
-          // our 6-swatch palette + common synonyms. First hit wins.
-          // The `name` is what the puppet will say back ("You picked green.").
-          const VOICE_COLORS: Array<[RegExp, string, string, string]> = [
-            [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)',   'black' ],
-            [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)',   'red'   ],
-            [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)',  'gold'  ],
-            [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)', 'green' ],
-            [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)', 'blue'  ],
-            [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)', 'plum'  ],
-          ]
-          for (const [re, hex, hsl, name] of VOICE_COLORS) {
-            if (re.test(message)) {
-              useAppStore.getState().pickColor(hex, hsl, name)
-              break
+          useAppStore.getState().pickColor('#1F1B16', 'hsl(30, 6%, 10%)', 'black')
+        } else if (s.phase === 3 && !s.tappedFace) {
+          useAppStore.getState().tapFace('sad')
+        } else if (s.phase === 4) {
+          useAppStore.getState().setChildWords('I miss my home in Iran')
+        } else if (s.phase === 5 && s.activeAssets.length === 0) {
+          useAppStore.getState().setChildWords('yes')
+          // Trigger Stage 5b after a beat so the puppet can speak her short
+          // comfort line before the sea image lands.
+          setTimeout(() => {
+            const cur = useAppStore.getState()
+            if (cur.phase === 5 && cur.activeAssets.length === 0) {
+              cur.setActiveAssets(
+                ['iran_landscape_caspian_shore_02'],
+                ['audio_sea_waves_01', 'audio_iran_music_traditional_01'],
+              )
             }
-          }
+          }, 2500)
         }
       }
       console.log(`[${source}]`, message)
