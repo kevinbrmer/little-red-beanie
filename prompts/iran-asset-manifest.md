@@ -1,7 +1,7 @@
 # Iran Asset Manifest — v1 (placeholder content)
 
 > Sourced into `prompts/system-prompt-v1.md` `<iran_assets>` section.
-> Real asset beschaffung is a separate track. The 25 IDs and tags below are
+> Real asset procurement is a separate track. The 25 IDs and tags below are
 > placeholders that match the spec §8 — file IDs to actual JPEGs once they exist.
 
 ```
@@ -28,6 +28,6 @@ iran_sky_stars_desert_20:         night sky over desert, quiet
 iran_water_river_zayandeh_21:     river through stone bridge arches
 iran_water_rain_window_22:        rain on window, blurred lights
 iran_textiles_carpet_loom_23:     carpet loom with bright threads
-iran_textiles_mother_hands_24:    hands kneading dough, warm tones
+iran_textiles_mother_hands_24:    mother's hands at loom, weaving threads
 iran_seasonal_nowruz_haftsin_25:  Nowruz haft-sin table, colorful
 ```

@@ -206,7 +206,7 @@ iran_sky_stars_desert_20:         night sky over desert, quiet
 iran_water_river_zayandeh_21:     river through stone bridge arches
 iran_water_rain_window_22:        rain on window, blurred lights
 iran_textiles_carpet_loom_23:     carpet loom with bright threads
-iran_textiles_mother_hands_24:    hands kneading dough, warm tones
+iran_textiles_mother_hands_24:    mother's hands at loom, weaving threads
 iran_seasonal_nowruz_haftsin_25:  Nowruz haft-sin table, colorful
 ```
 
