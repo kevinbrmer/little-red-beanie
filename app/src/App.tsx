@@ -8,6 +8,7 @@ import Phase4Question from './phases/Phase4Question'
 import Phase5Slideshow from './phases/Phase5Slideshow'
 import EmergencyTouchZone from './components/EmergencyTouchZone'
 import EscalationGlow from './components/EscalationGlow'
+import PushToTalk from './components/PushToTalk'
 
 const phaseComponents = {
   1: Phase1Onboarding,
@@ -99,6 +100,7 @@ export default function App() {
       </AnimatePresence>
       <EmergencyTouchZone />
       <EscalationGlow />
+      <PushToTalk />
     </div>
   )
 }

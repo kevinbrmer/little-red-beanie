@@ -45,6 +45,13 @@ export async function startVoiceSession() {
     onConnect: ({ conversationId }) => {
       console.log('[elevenlabs] connected', conversationId)
       useAppStore.getState().startSession()
+      // Push-to-talk: start muted. The PushToTalk component flips this
+      // on keydown(Space) / keyup(Space).
+      try {
+        conversation?.setMicMuted(true)
+      } catch (err) {
+        console.warn('[elevenlabs] setMicMuted(true) on connect failed', err)
+      }
     },
     onDisconnect: (details) => {
       console.log('[elevenlabs] disconnected', details)
@@ -98,6 +105,19 @@ export async function stopVoiceSession() {
   if (!conversation) return
   await conversation.endSession()
   conversation = null
+}
+
+/**
+ * Push-to-talk gate. Mic stays muted at rest; the PushToTalk component
+ * unmutes only while Kimi holds the talk key.
+ */
+export function setMicMuted(muted: boolean) {
+  if (!conversation) return
+  try {
+    conversation.setMicMuted(muted)
+  } catch (err) {
+    console.warn('[elevenlabs] setMicMuted failed', muted, err)
+  }
 }
 
 /**
