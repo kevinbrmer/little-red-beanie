@@ -7,8 +7,15 @@ import ColorPalette from '../components/ColorPalette'
 
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
+// After the color lands, give the puppet a beat to say "You picked green.",
+// then auto-fill the silhouette. No tap step.
+const FILL_DELAY_MS = 1200
+
+// Total time the color stays on screen before Phase 3 takes over. Includes
+// the fill delay above plus room for the puppet's short mirror to land.
+const ADVANCE_DELAY_MS = 3000
+
 export default function Phase2Coloring() {
-  const name = useAppStore((s) => s.name)
   const color = useAppStore((s) => s.color)
   const pickColor = useAppStore((s) => s.pickColor)
   const finishColoring = useAppStore((s) => s.finishColoring)
@@ -21,35 +28,39 @@ export default function Phase2Coloring() {
     triggerPhaseEntry()
   }, [])
 
-  // When color picked, send CTX update so Opus says the confirmation line
+  // When the color lands: sync CTX, auto-fill after a short beat, then advance.
   useEffect(() => {
-    if (color) sendCtxUpdate()
-  }, [color])
+    if (!color) return
+    sendCtxUpdate()
 
-  const handleSilhouetteTap = () => {
-    if (!color || filled) return
-    setFilled(true)
-    finishColoring()
-    // Give Opus room to finish "You did such a great job, Kimi." before we cut.
-    // Guard against double-advance: if Opus has already moved the phase
-    // forward via advance_phase, this timer must not pull the user back.
-    const t = setTimeout(() => {
+    const fillTimer = setTimeout(() => {
+      setFilled(true)
+      finishColoring()
+    }, FILL_DELAY_MS)
+
+    // The Phase 3 entry bridge ("Beautiful. Now let's find a face for today.")
+    // plays right after the advance — no need for a separate "great job" line.
+    const advanceTimer = setTimeout(() => {
       if (useAppStore.getState().phase === 2) {
         setPhase(3)
-        sendCtxUpdate()
       }
-    }, 3000)
-    return () => clearTimeout(t)
-  }
+    }, ADVANCE_DELAY_MS)
+
+    return () => {
+      clearTimeout(fillTimer)
+      clearTimeout(advanceTimer)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [color])
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
       className="flex h-full w-full flex-col items-center justify-between py-10"
     >
-      {/* Header — name as Fraunces display */}
+      {/* Title block — chapter overline + warm prompt */}
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,58 +68,49 @@ export default function Phase2Coloring() {
         className="flex flex-col items-center"
       >
         <span
-          className="text-xs uppercase tracking-[0.32em] text-ink-soft"
+          className="mb-3 text-xs uppercase tracking-[0.42em] text-old-gold"
+          aria-hidden="true"
         >
-          for
+          Chapter II
         </span>
-        <h2
-          className="mt-1 text-4xl italic text-ink"
+        <p
+          className="text-2xl italic leading-snug text-ink"
           style={{
             fontFamily: 'var(--font-display)',
             fontVariationSettings: '"opsz" 96',
             fontWeight: 400,
           }}
         >
-          {name}
-        </h2>
+          Which color feels right today?
+        </p>
         <div
-          className="mt-3 h-px w-12"
+          className="mt-4 h-px w-12"
           style={{ backgroundColor: 'var(--color-mist)' }}
           aria-hidden="true"
         />
       </motion.div>
 
-      {/* Silhouette hero */}
-      <motion.button
-        type="button"
-        onClick={handleSilhouetteTap}
-        className="h-[58vh] w-[38vh] focus:outline-none"
-        disabled={!color || filled}
-        aria-label="Tap to color in"
-        whileTap={{ scale: 0.97 }}
-        transition={{ duration: 0.08, ease: EDITORIAL_EASE }}
+      {/* Silhouette — fills automatically once a color is picked */}
+      <motion.div
+        className="h-[58vh] w-[38vh]"
+        aria-hidden="true"
       >
         <KimiSilhouette
           clothingColor={filled ? color : null}
           face="happy"
           showFace={false}
         />
-      </motion.button>
+      </motion.div>
 
-      {/* Palette — arc-arranged */}
+      {/* Palette stays visible until the silhouette is filled */}
       {!filled && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.5, delay: 0.2, ease: EDITORIAL_EASE }}
           className="flex flex-col items-center gap-3"
         >
-          <p
-            className="text-base italic text-ink-soft"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Which color feels right today?
-          </p>
           <ColorPalette onPick={pickColor} selected={color} />
         </motion.div>
       )}
