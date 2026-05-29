@@ -1,8 +1,17 @@
 """
 T6-T9: Phase 4 silence handling, Phase 5 asset selection.
 """
+import pytest
+
 from runner import run_turn
 from conftest import assert_one_question_max, assert_no_forbidden_words
+
+PITCH_SKIP_REASON = (
+    "Pitch-Variante v1.0: Phase 5 is two-stage (5a offer → 5b show_assets). "
+    "Bare topic enters Stage 5a where the puppet asks the comfort question and "
+    "does NOT call show_assets yet. Reactivate after pitch when canonical "
+    "single-stage Phase 5 is restored."
+)
 
 
 # The exact 25 asset IDs from the manifest, for membership checks.
@@ -75,6 +84,7 @@ def test_t7_phase_4_silence_45s_advances_silent():
         f"Expected null topic, got: {payload!r}"
 
 
+@pytest.mark.skip(reason=PITCH_SKIP_REASON)
 def test_t8_phase_5_iran_shows_3_to_5_assets():
     """Phase 5 with topic=Iran. Puppet calls show_assets with 3-5 valid IDs."""
     r = run_turn(
@@ -97,6 +107,7 @@ def test_t8_phase_5_iran_shows_3_to_5_assets():
     assert "?" not in r.text
 
 
+@pytest.mark.skip(reason=PITCH_SKIP_REASON)
 def test_t9_phase_5_no_topic_picks_neutral_nature():
     """Phase 5 with topic=null. Puppet picks calm landscape/sky/nature IDs."""
     r = run_turn(

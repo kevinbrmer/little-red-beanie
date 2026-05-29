@@ -2,7 +2,7 @@
 
 # Little Red Beanie
 
-> Stand: 2026-05-28. Status: Kick-off, Methoden-Recherche abgeschlossen. Technisches Konzept, App-Architektur und Slide-Deck stehen aus.
+> Stand: 2026-05-29 (Pitch-Variante v1.0 für Live-Demo am 2026-05-30). System-Prompt, Eval-Suite, Iran-Asset-Manifest, Audio-Asset-Manifest und ElevenLabs-Integrations-Checklist stehen. App-Implementierung als Web-PWA in Arbeit. Kanonische Spec bleibt in `output/system-prompt-design.md` für Post-Pitch-Iteration.
 
 ## Konzept in einem Satz
 
@@ -23,17 +23,17 @@ Soziale Arbeit / Pädagogik / nicht-klinische emotionale Begleitung. **Kein** kl
 
 **Demo-Sprache:** Englisch — siehe Roboter-Zitate unten und `input/pitch-story.md`. Voice ist englisch (siehe `output/voice-design-prompt.md`).
 
-**Kurzfassung:** 8-jährige iranische Schülerin („Kimi") betritt mit der Schulsozialarbeiterin den Betreuungsraum („The Oasis"). Sie läuft direkt zur Puppe. Die Sozialarbeiterin schaltet ein, die Puppe fragt nach Name und Alter, zeigt eine Silhouette mit Kimis Namen darüber. Kimi wählt eine Farbe und malt ihre Silhouette aus. Dann Gesichts-Karussell („Say stop"), offene Frage „What's going on, Kimi?" → sie sagt nur „Iran". Die Puppe zeigt Bilder aus dem Iran als wortlose Spiegelung.
+**Kurzfassung (Pitch-Variante v1.0):** 8-jährige iranische Schülerin („Kimi") betritt mit der Schulsozialarbeiterin den Betreuungsraum („The Oasis"). Sie läuft direkt zur Puppe. Die Sozialarbeiterin schaltet ein, die Puppe fragt nach Name und Alter, zeigt eine Silhouette mit Kimis Namen darüber. Kimi wählt eine Farbe und füllt ihre Silhouette per Tap. Dann Gesichts-Karussell („Tap on the face that feels like you"), sanfte Frage „Do you want to talk about it, Kimi?" → Kimi: „I miss my home in Iran." Die Puppe echo't kurz, fragt „Would you like to see the sea, Kimi?" → Kimi: „Yes." Iranisches-Meer-Bilder mit sanftem Wellen- und Musik-Audio erscheinen.
 
-**App-Flow (fünf Phasen) — Quick-Reference:**
+**App-Flow (fünf Phasen) — Quick-Reference (Pitch-Variante v1.0):**
 
 | Phase | Puppe (Englisch) | Kind | Technisch |
 |-------|------------------|------|-----------|
 | 1. Onboarding + Personalisierung | „Hi there. I'm Little Red Beanie. What's your name?" → „Nice to meet you. How old are you?" | nennt Name + Alter | STT auf Name + Alter, Touch-/Sozialarbeiter-Fallback. Beides als Session-Kontext gesetzt. |
-| 2. Selbst-Ausmalen | zeigt feste Silhouette mit Namen darüber + Farbpalette; „Would you like to give yourself a color, [Name]? Now color yourself in." | wählt Farbe, malt Silhouette mit dem Finger aus | Touch-Auswahl Farbe (HSL → LLM-Prior) + Mal-Funktion mit Strich-Clipping auf die Silhouetten-Maske |
-| 3. Gesichts-Karussell | zeigt vier Gesichter nacheinander, „Say 'stop' when you see one that feels like you, [Name]." | sagt „stop" | STT (Stopp-Trigger) + Touch-Fallback |
-| 4. Offene Frage | „What's going on, [Name]?" | schweigt oder sagt ein Wort („Iran") | STT, akzeptiert Schweigen |
-| 5. Spiegel-Antwort | wählt Bilder aus kuratiertem Iran-Asset-Pool und zeigt sie | wird ruhiger | LLM-gesteuerte Asset-Auswahl |
+| 2. Selbst-Ausmalen | zeigt feste Silhouette mit Namen darüber + Farbpalette; „Would you like to give yourself a color, [Name]? Now color yourself in." | wählt Farbe, tippt auf Silhouette | Touch-Auswahl Farbe (HSL → LLM-Prior) + **Tap-to-Fill** auf SVG-Silhouette (~1 s CSS-Animation). Vereinfachung des kanonischen Strich-Clippings. |
+| 3. Gesichts-Karussell | zeigt vier Gesichter nacheinander, „Tap on the face that feels like you, [Name]." | tippt auf das Gesicht | **Touch-Auswahl** (kein Voice). „Stop" bleibt ausschließlich Veto/Co-Reg-Trigger. |
+| 4. Sanfte Einladung | „Do you want to talk about it, [Name]?" | antwortet kurz oder mit Satz („I miss my home in Iran.") | STT, akzeptiert Schweigen und ganze Sätze |
+| 5. Comforting Mirror (zweistufig) | **5a:** echo + „Would you like to see the sea, [Name]?" → **5b** bei Yes: zeigt Sea-Bilder + Wellen-Audio + iranische Musik | tippt/sagt Yes oder bleibt still (Fallback) | `show_assets(ids, audio_ids)` Tool-Call, Slideshow + Audio-Crossfade |
 
 **Pitch-Ablauf:**
 1. **5-Slide-Präsentation** leitet die Geschichte ein (Setting Oase, Mädchen, Bedeutung des Roboters).
@@ -123,7 +123,7 @@ Etablierte Symbol-Methode (Sonne/Wolke/Regen/Gewitter) für Emotions-Check-ins. 
 - **Personalisierungs-Kontext:** Name und Alter werden in Phase 1 erfasst. Name fließt in jede spätere Anrede ein. Alter dient primär der Gesprächs-Auflockerung und einem warmen, altersgerechten Sprachregister — **nicht** der Logik-Verzweigung (Silhouette ist fest, Persona ist fest).
 - **Input pro Turn:** Aktuelle Phase + Name + Alter + ausgewählter Farb-Code (HSL) + Mal-Verlauf-Marker (z. B. zögerlich/zügig/leer) + ausgewähltes Gesicht (Emotion-Label) + Sprach-/Text-Antworten + Stille-Marker.
 - **Farb-Bewertung:** Helligkeit/Sättigung als Prior („dunkel/entsättigt → belastet"), **nie als Diagnose**. Das Gesichts-Karussell präzisiert die Emotion — Farbe bleibt mehrdeutig.
-- **Stopp-Mechanik:** „Stopp" im Karussell ist **Auswahl-Signal**. „Stopp" außerhalb oder Schweigen >X Sek. ist **Veto-Signal** → Wechsel zu Co-Regulation.
+- **Stopp-Mechanik (kanonisch):** „Stopp" im Karussell ist **Auswahl-Signal**. „Stopp" außerhalb oder Schweigen >X Sek. ist **Veto-Signal** → Wechsel zu Co-Regulation. *(In Pitch-Variante v1.0 wird im Karussell stattdessen getippt — „Stopp" ist überall ausschließlich Veto-Signal. Saubere Trennung.)*
 - **Asset-Auswahl:** Bei Ein-Wort-Antworten (z. B. „Iran") wählt das LLM Bilder aus dem kuratierten Pool, die **spiegeln statt deuten**. Modellrichtlinie: zeige Vertrautes, kein Pathos.
 - **Eskalation:** Bei Trauma-Markern → Roboter wechselt zu Co-Regulation (ruhige Stimme, weiches Bild). Die anwesende Sozialarbeiterin ist die menschliche Instanz; der Roboter setzt nonverbale Cues, schiebt nicht tiefer in die Exploration.
 - **Privacy:** Name + Alter bleiben **session-only**, keine Persistenz über die Session hinaus (DSGVO + EU AI Act bei Minderjährigen).
@@ -157,7 +157,7 @@ Etablierte Symbol-Methode (Sonne/Wolke/Regen/Gewitter) für Emotions-Check-ins. 
 
 - **Sprache:** Deutsch für Projekt-Doku und Code-Kommentare. **Demo-Sprache, Roboter-Dialog, Slide-Deck-Inhalt und App-UI-Texte: Englisch** (entschieden 2026-05-28).
 - **Voice/LLM-Stack:** ElevenLabs Conversational AI + Anthropic Opus 4.7 + Voice Design Custom Voice. Begründung und Latenz-Annahmen in [`output/tech-stack.md`](output/tech-stack.md).
-- **App / Front-End:** noch offen — wird in der App-Architektur-Session festgelegt (Touchscreen-App, Mal-Funktion mit Strich-Clipping auf Silhouetten-Maske).
+- **App / Front-End (Pitch-Variante v1.0, entschieden 2026-05-29):** **Web-PWA** — React + Vite + TypeScript + Tailwind, im Chrome-Vollbild auf Android-Tablet. Mal-Funktion ist **Tap-to-Fill** auf SVG-Silhouette (kanonisch wäre Strich-Clipping — Post-Pitch-Iteration). Voice-Layer via ElevenLabs JS-SDK, Tool-Routing in der App (advance_phase / show_assets / mark_escalation).
 - **Tests:** Dialog-Architektur muss explizit getestet werden (Stop-Wort, Eskalation, Sicherheits-Constraints, Latenz < 1 s).
 
 ## Ein- und Ausgabe

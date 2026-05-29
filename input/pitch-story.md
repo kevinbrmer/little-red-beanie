@@ -1,6 +1,6 @@
 # Pitch-Story — Little Red Beanie
 
-> Vom Nutzer geliefert 2026-05-28, überarbeitete Fassung (Personalisierung, Selbst-Ausmal-Phase, Demo-Sprache **Englisch**). Das ist die EINE Szene, die im Pitch gespielt wird, und der ENGE Scope, den die App abdecken muss. Keine generische Plattform — nur dieses Szenario.
+> Vom Nutzer geliefert 2026-05-28, **Pitch-Variante v1.0 aktualisiert 2026-05-29** (Phase 3 Tap statt Stop-Voice, Phase 4 sanftere Frage, Phase 5 zweistufig mit Sea-Comfort-Offer + Ambient-Audio). Das ist die EINE Szene, die im Pitch gespielt wird, und der ENGE Scope, den die App abdecken muss. Keine generische Plattform — nur dieses Szenario.
 > Meta-Beschreibung auf Deutsch, **Story-Erzählung + Roboter-Dialog auf Englisch**.
 
 ## Setting
@@ -37,17 +37,21 @@ With calm, circling movements, Kimi traces her finger across the outline. Black 
 
 **Little Red Beanie: „You did such a great job, Kimi."**
 
-To understand Kimi's feelings better, Little Red Beanie now shows her different facial expressions. Happy, surprised, scared, and sad faces appear one after another. Softly, the puppet asks: **„Say 'stop' when you see one that feels like you, Kimi."**
+To understand Kimi's feelings better, Little Red Beanie now shows her different facial expressions. Happy, surprised, scared, and sad faces appear one after another on the screen. Softly, the puppet asks: **„Tap on the face that feels like you, Kimi."**
 
-When a sad face appears, she looks at it for a long time, and finally whispers: „Stop."
+When the sad face appears, she looks at it for a long time, and finally taps it. **„You picked this one, Kimi."**
 
-Little Red Beanie recognizes her sadness, and asks gently: **„What's going on, Kimi?"**
+Little Red Beanie recognizes her sadness, and asks gently: **„Do you want to talk about it, Kimi?"**
 
-But Kimi stays silent. Not because she does not want to answer, but because her words are not enough to describe what she misses. After a long moment, she says only one word: **„Iran."**
+Kimi hesitates for a moment. Then, very softly: **„I miss my home in Iran."**
 
-In this single word lives all her sadness. Her missed home. Familiar smells, voices, places, and people, suddenly far away.
+In these few words lives all her sadness. Her missed home. Familiar smells, voices, places, and people, suddenly far away.
 
-Then, images from Iran appear on Little Red Beanie's screen: familiar landscapes, streets, colors, and impressions of her homeland. Her expression changes immediately. Her eyes begin to light up, her posture softens. For the first time today, she does not seem alone with her feelings. You can feel her being understood — without many words.
+Little Red Beanie echoes her quietly: **„Iran…"** A short pause. Then, warmly: **„Would you like to see the sea, Kimi?"**
+
+Kimi looks up. **„Yes."**
+
+Slowly, images of the iranian sea begin to appear on Little Red Beanie's screen: the Caspian shore at dusk, soft waves on calm water, a wide horizon at sunset. Underneath, very softly, the sound of gentle waves and a quiet traditional iranian melody fills the room. Her expression changes immediately. Her eyes begin to light up, her posture softens. For the first time today, she does not seem alone with her feelings. You can feel her being understood — without many words.
 
 ## Abgeleitete App-Flow-Phasen
 
@@ -55,9 +59,9 @@ Aus der Szene ergeben sich fünf klar abgegrenzte Phasen, die die App technisch 
 
 1. **Onboarding + Personalisierung** — Audio-Begrüßung, Roboter fragt nach Name und Alter (englisch). Die Alters-Frage lockert das Gespräch auf und gibt der Puppe einen warmen Aufhänger. Name wird zum Anker jeder späteren Anrede.
 2. **Selbst-Ausmalen** — Auf dem Bildschirm erscheint die feste Silhouette (kleines iranisches Mädchen mit dunklen Locken, kräftige Rahmenlinien für Finger-Malen) mit dem Namen darüber. Das Kind wählt am Rand eine Farbe und malt die Silhouette mit dem Finger aus. **Übermalen wird software-seitig unterbunden** (Strich-Clipping auf die Silhouetten-Maske) — der Rahmen ist Schluss. „Schwarz" ist Teil der angebotenen Palette.
-3. **Gesichts-Karussell mit Stopp-Trigger** — Vier oder mehr Gesichtsausdrücke nacheinander; Spracherkennung auf „stop"; alternativ Touch-Stopp.
-4. **Offene Spiegelfrage** — „What's going on, [Name]?" als sokratische Öffnung. Akzeptiert Schweigen, Ein-Wort-Antworten, Sprache.
-5. **Multimodale Validierungs-Antwort** — Bilder aus dem genannten Kontext (hier: Iran) aus einem kuratierten Asset-Pool. LLM entscheidet, was gezeigt wird.
+3. **Gesichts-Karussell mit Tap-Auswahl** — Vier Gesichtsausdrücke nacheinander; Auswahl per Touch (Tap auf das Gesicht). Keine Voice-Trigger mehr in dieser Phase — „stop" bleibt ausschließlich Veto/Co-Reg-Trigger (Hard Rule #5).
+4. **Sanfte Einladungsfrage** — „Do you want to talk about it, [Name]?" als warm-öffnende Frage. Akzeptiert Schweigen, kurze Antworten oder ganze Sätze.
+5. **Comforting Mirror, zweistufig** — Stage 5a: Echo des Kindes („Iran…") + Comfort-Offer („Would you like to see the sea, [Name]?"). Stage 5b (bei Yes): kuratierte Sea-Bilder aus dem Iran-Asset-Pool + sanftes Wellenrauschen + leise traditionelle iranische Musik. Bei Nein/Stop greift Hard Rule #5 (Co-Regulation); bei Stille kommt eine Fallback-Slideshow ohne Audio.
 
 ## Personalisierung — warum sie zentral ist
 
@@ -82,6 +86,20 @@ Aus der Szene ergeben sich fünf klar abgegrenzte Phasen, die die App technisch 
 
 - **Alter-Eingabe:** wird beim Onboarding erfragt — primär STT auf das gesprochene Wort („eight"), Touch-/Sozialarbeiter-Fallback. Zweck: das Gespräch warm und persönlich starten, nicht für Logik-Verzweigung.
 - **Silhouette:** genau eine — kleines iranisches Mädchen, dunkle Locken, starke Rahmenlinien für Finger-Malen.
-- **Mal-Mechanik:** software-seitiges Strich-Clipping auf die Silhouetten-Maske. Übermalen ist nicht möglich; das ist eine bewusste UX-Eigenschaft.
+- **Mal-Mechanik (kanonisch):** software-seitiges Strich-Clipping auf die Silhouetten-Maske. Übermalen ist nicht möglich; das ist eine bewusste UX-Eigenschaft. *(In Pitch-Variante v1.0 vereinfacht — siehe unten.)*
 - **Persistenz:** Name + Alter session-only. Keine Speicherung über die Session hinaus (DSGVO + EU AI Act).
 - **Demo-Sprache:** Englisch — Voice ist englisch (siehe `output/voice-design-prompt.md`), Story-Dialog und Slide-Deck-Inhalt entsprechend englisch. Story-Erzählung im Pitch in englischer Sprache.
+
+## Pitch-Variante v1.0 (2026-05-29) — bewusste Abweichungen
+
+Aufgrund der 1-Tages-Pitch-Frist wurde der App-Bau auf eine fokussierte Pitch-Variante zugeschnitten. Die kanonische Spec bleibt bestehen für die echte App-Implementierung post-Pitch.
+
+- **Plattform:** Web-PWA (Vite + React + TS + Tailwind) im Chrome-Vollbild auf Android-Tablet — nicht Native Android.
+- **Mal-Mechanik:** **Tap-to-Fill** statt Strich-Clipping. Silhouette als SVG-Pfad, Tap mit gewählter Farbe → komplette Füllung in ~1 s CSS-Animation. Spec-Bruch gegenüber „kein Übermalen" — dafür Story-tragend in 30 Min statt 3 h.
+- **Gesichts-Karussell:** **Tap-Auswahl** statt Voice-„Stop". „Stop" bleibt ausschließlich Veto/Co-Reg-Trigger (Hard Rule #5).
+- **Phase-4-Frage:** „Do you want to talk about it, [Name]?" statt „What's going on, [Name]?" — warmere Einladung, die Kimi eine vollständige Antwort entlockt.
+- **Phase 5 zweistufig:** Comfort-Offer („Would you like to see the sea, [Name]?") bevor `show_assets` feuert. Methodisch ein Bruch von „keine Interpretation" (Puppe vermutet Trost-Mittel) und „Validation-before-Reflection" (Frage statt Validation zuerst) — bewusste dramaturgische Entscheidung für die Bühne.
+- **Audio in Phase 5b:** Sanftes Wellenrauschen + traditionelle iranische Musik im Hintergrund während der Slideshow. Neue Tool-Signatur `show_assets(ids, audio_ids?)` und neuer Audio-Pool (`prompts/audio-asset-manifest.md`).
+- **Bühnen-Setup:** Kimi-Schauspielerin + Puppe-Tablet vorne, Sozialarbeiterin nur für den Power-on-Moment auf der Bühne, danach passiv. Keine Backstage-Bedienung.
+- **Failover (autark):** Pre-rendered Voice-Lines lokal in der App; Latenz-Watchdog (>2 s → Local-MP3); automatischer Phase-Advance nach Timeout; diskreter Notfall-Touch-Bereich.
+- **Eval-Suite:** T5 (Iran advances), T8 (Phase 5 sea-assets), T9 (Phase 5 no-topic) sind in der Pitch-Variante als skipped markiert — der Prompt verhält sich anders als die kanonische Spec.
