@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-beanie-blue: #3b6dc9;
+  --color-beanie-white: #f8fafc;
+  --color-beanie-red: #dc2626;
+  --color-beanie-green: #16a34a;
+  --color-beanie-yellow: #fbbf24;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  background-color: var(--color-beanie-yellow);
+}
