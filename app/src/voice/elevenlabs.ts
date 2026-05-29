@@ -40,9 +40,32 @@ export async function startVoiceSession() {
       console.error('[elevenlabs] error', message, context)
     },
     onMessage: ({ source, message }) => {
-      // SDK message source is "user" | "ai"; capture only the child's words.
       if (source === 'user') {
+        const s = useAppStore.getState()
         useAppStore.getState().setChildWords(message)
+        if (s.phase === 1) {
+          if (!s.name) {
+            // crude: take the first word, strip punctuation
+            const first = message.trim().split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '')
+            if (first && first.length >= 2) useAppStore.getState().setName(first)
+          } else if (!s.age) {
+            const wordToNum: Record<string, number> = {
+              six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+            }
+            const num = message.match(/\b(\d{1,2})\b/)?.[1]
+            if (num) {
+              useAppStore.getState().setAge(parseInt(num))
+            } else {
+              const lower = message.toLowerCase()
+              for (const [w, n] of Object.entries(wordToNum)) {
+                if (lower.includes(w)) {
+                  useAppStore.getState().setAge(n)
+                  break
+                }
+              }
+            }
+          }
+        }
       }
       console.log(`[${source}]`, message)
     },
