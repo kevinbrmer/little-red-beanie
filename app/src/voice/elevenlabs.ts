@@ -23,8 +23,21 @@ let conversation: Awaited<ReturnType<typeof Conversation.startSession>> | null =
 export async function startVoiceSession() {
   if (conversation) return conversation
 
-  // Request mic permission first so Chrome doesn't block on session start
-  await navigator.mediaDevices.getUserMedia({ audio: true })
+  // Request mic permission with constraints tuned to suppress room noise:
+  // - noiseSuppression: damp background hum / fan / typing
+  // - echoCancellation: keep the puppet's own TTS out of the mic loop
+  // - autoGainControl: OFF, otherwise quiet background lecture audio gets
+  //   pumped up to "voice level" and the STT happily transcribes it.
+  // - channelCount/sampleRate aligned to the agent's pcm_16000 mono input.
+  await navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: false,
+      channelCount: 1,
+      sampleRate: 16000,
+    },
+  })
 
   conversation = await Conversation.startSession({
     agentId: requireAgentId(),
