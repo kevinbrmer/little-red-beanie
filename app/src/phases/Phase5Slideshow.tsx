@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
 import { sendCtxUpdate } from '../voice/elevenlabs'
 import { startAmbientAudio, stopAmbientAudio } from '../voice/audioFallback'
@@ -6,6 +7,7 @@ import KimiSilhouette from '../components/KimiSilhouette'
 
 const SLIDE_DURATION_MS = 4000
 const STAGE_5A_OFFER_DELAY_MS = 5000
+const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 /**
  * Map Opus-returned asset IDs to actual file paths.
@@ -76,43 +78,76 @@ export default function Phase5Slideshow() {
     return () => clearInterval(interval)
   }, [inStage5b])
 
-  // Stage 5a: silhouette + listening hint
+  // Stage 5a: silhouette with soft halo + listening caption in old gold
   if (!inStage5b) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-around py-8">
-        <div className="h-[50vh] w-[35vh]">
-          <KimiSilhouette
-            clothingColor={color}
-            face={tappedFace ?? 'sad'}
-            showFace={true}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+        className="flex h-full w-full flex-col items-center justify-center gap-10 py-10"
+      >
+        <div className="relative h-[50vh] w-[34vh]">
+          {/* Soft warm halo behind the silhouette */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -m-20 rounded-full"
+            style={{
+              background:
+                'radial-gradient(closest-side, rgba(184, 150, 104, 0.55), rgba(184, 150, 104, 0.15) 55%, rgba(184, 150, 104, 0) 80%)',
+              filter: 'blur(12px)',
+            }}
           />
+          <div className="relative h-full w-full">
+            <KimiSilhouette
+              clothingColor={color}
+              face={tappedFace ?? 'sad'}
+              showFace={true}
+            />
+          </div>
         </div>
-        <div className="text-2xl text-beanie-blue/70">
-          {offerMade ? `Listening, ${name}…` : ''}
-        </div>
-      </div>
+
+        {offerMade && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+            className="text-2xl italic text-old-gold"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Listening, {name}…
+          </motion.div>
+        )}
+      </motion.div>
     )
   }
 
-  // Stage 5b: full-screen crossfade slideshow
+  // Stage 5b: cream-bordered slideshow frame — feels like a printed album
   const sources =
     activeAssets.length > 0 ? activeAssets.map(resolveAssetSrc) : FALLBACK_SEA
   const src = sources[slideIdx % sources.length]
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-black">
-      <img
-        key={src}
-        src={src}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-0"
-        style={{ animation: 'fadeIn 1s forwards' }}
-      />
-      <style>{`
-        @keyframes fadeIn {
-          to { opacity: 1; }
-        }
-      `}</style>
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8, ease: EDITORIAL_EASE }}
+      className="relative h-full w-full overflow-hidden bg-cream p-2"
+    >
+      <div className="relative h-full w-full overflow-hidden bg-ink shadow-[0_10px_30px_rgba(31,27,22,0.18)]">
+        <img
+          key={src}
+          src={src}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover opacity-0"
+          style={{ animation: 'fadeIn 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}
+        />
+        <style>{`
+          @keyframes fadeIn {
+            to { opacity: 1; }
+          }
+        `}</style>
+      </div>
+    </motion.div>
   )
 }

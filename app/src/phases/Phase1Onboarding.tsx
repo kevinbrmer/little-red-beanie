@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
 import { sendCtxUpdate } from '../voice/elevenlabs'
+
+const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase1Onboarding() {
   const name = useAppStore((s) => s.name)
@@ -25,41 +28,100 @@ export default function Phase1Onboarding() {
   }, [name, age, setPhase])
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-8 px-12">
-      <h1 className="text-6xl font-bold text-beanie-blue">Hi, I'm Little Red Beanie</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+      className="flex h-full w-full flex-col items-center justify-center gap-12 px-12"
+    >
+      <div className="flex flex-col items-center text-center">
+        <span
+          className="mb-4 text-2xl text-old-gold"
+          aria-hidden="true"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          ❦
+        </span>
+        <h1
+          className="text-5xl italic leading-tight text-ink"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontVariationSettings: '"opsz" 144',
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+          }}
+        >
+          Hi, I'm Little Red Beanie.
+        </h1>
+      </div>
 
       {!name && (
-        <div className="flex flex-col items-center gap-4">
-          <label className="text-3xl text-beanie-blue">Or type your name:</label>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: EDITORIAL_EASE }}
+          className="flex w-full max-w-md flex-col items-center gap-4"
+        >
+          <label className="text-xs uppercase tracking-[0.32em] text-ink-soft">
+            What's your name?
+          </label>
           <input
             type="text"
             value={touchName}
             onChange={(e) => setTouchName(e.target.value)}
             onBlur={() => touchName && setName(touchName)}
-            className="rounded-xl border-4 border-beanie-blue px-6 py-4 text-3xl"
+            className="w-full border-b border-ink/30 bg-transparent pb-3 text-center text-4xl italic text-ink placeholder:text-ink-soft/40 focus:border-old-gold focus:outline-none"
+            style={{ fontFamily: 'var(--font-display)' }}
             placeholder="Kimi"
           />
-        </div>
+        </motion.div>
       )}
 
       {name && !age && (
-        <div className="flex flex-col items-center gap-4">
-          <label className="text-3xl text-beanie-blue">Or tap your age:</label>
-          <div className="flex gap-3">
-            {[6, 7, 8, 9, 10, 11, 12].map((a) => (
-              <button
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EDITORIAL_EASE }}
+          className="flex flex-col items-center gap-6"
+        >
+          <label className="text-xs uppercase tracking-[0.32em] text-ink-soft">
+            How old are you?
+          </label>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[6, 7, 8, 9, 10, 11, 12].map((a, idx) => (
+              <motion.button
                 key={a}
+                type="button"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.35,
+                  delay: 0.08 * idx,
+                  ease: EDITORIAL_EASE,
+                }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setAge(a)}
-                className="rounded-xl border-4 border-beanie-blue px-6 py-4 text-3xl font-bold"
+                className="h-16 w-16 rounded-full bg-paper text-2xl text-deep-blue shadow-[0_2px_6px_rgba(31,27,22,0.08),inset_0_1px_0_rgba(255,255,255,0.6)] ring-1 ring-mist transition hover:shadow-[0_4px_12px_rgba(31,27,22,0.12),inset_0_1px_0_rgba(255,255,255,0.7)]"
+                style={{ fontFamily: 'var(--font-display)' }}
               >
                 {a}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
-      {name && <div className="text-2xl text-beanie-blue">Hello, {name}.</div>}
-    </div>
+      {name && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+          className="text-base italic text-ink-soft"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          Hello, {name}.
+        </motion.div>
+      )}
+    </motion.div>
   )
 }

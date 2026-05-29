@@ -1,28 +1,39 @@
 interface Props {
   onPick: (hex: string, hsl: string) => void
+  selected?: string | null
 }
 
 const COLORS: { hex: string; hsl: string; label: string }[] = [
-  { hex: '#000000', hsl: 'hsl(0, 0%, 0%)',  label: 'Black' },
-  { hex: '#dc2626', hsl: 'hsl(0, 84%, 51%)', label: 'Red' },
-  { hex: '#fbbf24', hsl: 'hsl(43, 96%, 56%)', label: 'Yellow' },
-  { hex: '#16a34a', hsl: 'hsl(142, 76%, 36%)', label: 'Green' },
-  { hex: '#3b6dc9', hsl: 'hsl(217, 56%, 51%)', label: 'Blue' },
-  { hex: '#a855f7', hsl: 'hsl(271, 91%, 65%)', label: 'Purple' },
+  { hex: '#1F1B16', hsl: 'hsl(30, 6%, 10%)',   label: 'Ink' },
+  { hex: '#C7503A', hsl: 'hsl(9, 56%, 50%)',   label: 'Warm Red' },
+  { hex: '#B89668', hsl: 'hsl(33, 36%, 56%)',  label: 'Old Gold' },
+  { hex: '#6F8868', hsl: 'hsl(108, 13%, 47%)', label: 'Soft Green' },
+  { hex: '#2C4A7A', hsl: 'hsl(214, 47%, 33%)', label: 'Deep Blue' },
+  { hex: '#7A5A8C', hsl: 'hsl(280, 19%, 45%)', label: 'Plum' },
 ]
 
-export default function ColorPalette({ onPick }: Props) {
+export default function ColorPalette({ onPick, selected }: Props) {
   return (
-    <div className="flex flex-wrap justify-center gap-4">
-      {COLORS.map((c) => (
-        <button
-          key={c.hex}
-          onClick={() => onPick(c.hex, c.hsl)}
-          className="h-20 w-20 rounded-full border-4 border-white shadow-lg"
-          style={{ backgroundColor: c.hex }}
-          aria-label={c.label}
-        />
-      ))}
+    <div className="flex flex-wrap justify-center gap-5">
+      {COLORS.map((c) => {
+        const isSelected = selected === c.hex
+        return (
+          <button
+            key={c.hex}
+            type="button"
+            onClick={() => onPick(c.hex, c.hsl)}
+            className="relative h-16 w-16 rounded-full transition-transform duration-200 hover:scale-105 focus:outline-none active:scale-95"
+            style={{
+              backgroundColor: c.hex,
+              boxShadow: isSelected
+                ? '0 0 0 3px var(--color-paper), 0 0 0 4px var(--color-old-gold), 0 4px 12px rgba(31, 27, 22, 0.18), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.12)'
+                : '0 3px 8px rgba(31, 27, 22, 0.16), inset 0 2px 4px rgba(255, 255, 255, 0.30), inset 0 -3px 6px rgba(0, 0, 0, 0.10)',
+            }}
+            aria-label={c.label}
+            aria-pressed={isSelected}
+          />
+        )
+      })}
     </div>
   )
 }

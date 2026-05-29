@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
 import { sendCtxUpdate } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
+
+const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase4Question() {
   const name = useAppStore((s) => s.name)
@@ -46,13 +49,17 @@ export default function Phase4Question() {
   }, [])
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-around py-8">
-      <div className="flex w-full justify-between px-12">
-        <div className="text-3xl text-beanie-blue/70">Phase 4</div>
-        <div className="text-3xl text-beanie-blue/70">{secs}s</div>
-      </div>
-
-      <div className="h-[40vh] w-[28vh]">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+      className="relative flex h-full w-full items-center justify-center px-10"
+    >
+      {/* Margin illustration — tiny silhouette in lower-left corner */}
+      <div
+        className="pointer-events-none absolute bottom-10 left-10 h-[22vh] w-[14vh] opacity-90"
+        aria-hidden="true"
+      >
         <KimiSilhouette
           clothingColor={color}
           face={tappedFace ?? 'sad'}
@@ -60,15 +67,58 @@ export default function Phase4Question() {
         />
       </div>
 
-      <div className="max-w-3xl text-center text-4xl font-bold text-beanie-blue">
-        Do you want to talk about it, {name}?
+      {/* Quiet meta — top corners */}
+      <div className="pointer-events-none absolute top-8 left-10 text-xs uppercase tracking-[0.28em] text-ink-soft/60">
+        Phase IV
+      </div>
+      <div className="pointer-events-none absolute top-8 right-10 font-mono text-xs tracking-wider text-ink-soft/50">
+        {secs.toString().padStart(2, '0')}s
       </div>
 
-      {childWords && (
-        <div className="max-w-3xl text-center text-xl italic text-beanie-blue/70">
-          "{childWords}"
-        </div>
-      )}
-    </div>
+      {/* The question as a giant pulled quote */}
+      <motion.figure
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: EDITORIAL_EASE }}
+        className="relative mx-auto max-w-2xl"
+      >
+        {/* Hanging quotation mark in old gold */}
+        <span
+          aria-hidden="true"
+          className="absolute -left-2 -top-12 select-none text-[8rem] leading-none text-old-gold/80"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 400,
+            fontVariationSettings: '"opsz" 144',
+          }}
+        >
+          “
+        </span>
+
+        <blockquote
+          className="relative text-5xl italic leading-[1.15] text-ink"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontVariationSettings: '"opsz" 144',
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+          }}
+        >
+          Do you want to talk about it, {name}?
+        </blockquote>
+
+        {childWords && (
+          <motion.figcaption
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+            className="mt-8 border-l border-old-gold/60 pl-5 text-lg italic text-ink-soft"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            “{childWords}”
+          </motion.figcaption>
+        )}
+      </motion.figure>
+    </motion.div>
   )
 }

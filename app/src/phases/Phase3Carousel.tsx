@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useAppStore, type FaceExpression } from '../state/appStore'
 import { sendCtxUpdate } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
 
 const CYCLE: FaceExpression[] = ['happy', 'surprised', 'scared', 'sad']
 const SECS_PER_FACE = 3
+const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase3Carousel() {
   const name = useAppStore((s) => s.name)
@@ -51,27 +53,59 @@ export default function Phase3Carousel() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-around py-8">
-      <div className="max-w-2xl text-center text-3xl text-beanie-blue">
-        Tap when you see the face that feels like you, {name}.
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+      className="flex h-full w-full flex-col items-center justify-between py-10"
+    >
+      {/* Magazine-style pull-quote instruction */}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.1, ease: EDITORIAL_EASE }}
+        className="flex max-w-xl flex-col items-center text-center"
+      >
+        <span
+          className="text-2xl text-old-gold"
+          aria-hidden="true"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          ❋
+        </span>
+        <p
+          className="mt-2 text-2xl italic leading-snug text-ink"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontVariationSettings: '"opsz" 96',
+            fontWeight: 400,
+          }}
+        >
+          Tap when you see the face that feels like you, {name}.
+        </p>
+      </motion.div>
 
-      <button
+      {/* Silhouette hero */}
+      <motion.button
+        type="button"
         onClick={handleTap}
-        className="h-[60vh] w-[40vh] focus:outline-none"
+        className="h-[58vh] w-[38vh] focus:outline-none"
         disabled={tapped}
         aria-label="Tap when this face feels like you"
+        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.08, ease: EDITORIAL_EASE }}
       >
         <KimiSilhouette
           clothingColor={color}
           face={faceNow}
           showFace={true}
         />
-      </button>
+      </motion.button>
 
-      <div className="text-xl text-beanie-blue/60">
-        {tapped ? 'You picked this one.' : `Face: ${faceNow}`}
+      {/* Quiet status caption */}
+      <div className="text-xs uppercase tracking-[0.28em] text-ink-soft/70">
+        {tapped ? 'You picked this one.' : faceNow}
       </div>
-    </div>
+    </motion.div>
   )
 }

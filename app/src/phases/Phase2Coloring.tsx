@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
 import { sendCtxUpdate } from '../voice/elevenlabs'
 import KimiSilhouette from '../components/KimiSilhouette'
 import ColorPalette from '../components/ColorPalette'
+
+const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase2Coloring() {
   const name = useAppStore((s) => s.name)
@@ -40,23 +43,75 @@ export default function Phase2Coloring() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-around py-8">
-      <div className="text-5xl font-bold text-beanie-blue">{name}</div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+      className="flex h-full w-full flex-col items-center justify-between py-10"
+    >
+      {/* Header — name as Fraunces display */}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: EDITORIAL_EASE }}
+        className="flex flex-col items-center"
+      >
+        <span
+          className="text-xs uppercase tracking-[0.32em] text-ink-soft"
+        >
+          for
+        </span>
+        <h2
+          className="mt-1 text-4xl italic text-ink"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontVariationSettings: '"opsz" 96',
+            fontWeight: 400,
+          }}
+        >
+          {name}
+        </h2>
+        <div
+          className="mt-3 h-px w-12"
+          style={{ backgroundColor: 'var(--color-mist)' }}
+          aria-hidden="true"
+        />
+      </motion.div>
 
-      <button
+      {/* Silhouette hero */}
+      <motion.button
+        type="button"
         onClick={handleSilhouetteTap}
-        className="h-[60vh] w-[40vh] focus:outline-none"
+        className="h-[58vh] w-[38vh] focus:outline-none"
         disabled={!color || filled}
         aria-label="Tap to color in"
+        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.08, ease: EDITORIAL_EASE }}
       >
         <KimiSilhouette
           clothingColor={filled ? color : null}
           face="happy"
           showFace={false}
         />
-      </button>
+      </motion.button>
 
-      {!filled && <ColorPalette onPick={pickColor} />}
-    </div>
+      {/* Palette — arc-arranged */}
+      {!filled && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: EDITORIAL_EASE }}
+          className="flex flex-col items-center gap-3"
+        >
+          <p
+            className="text-base italic text-ink-soft"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Which color feels right today?
+          </p>
+          <ColorPalette onPick={pickColor} selected={color} />
+        </motion.div>
+      )}
+    </motion.div>
   )
 }
