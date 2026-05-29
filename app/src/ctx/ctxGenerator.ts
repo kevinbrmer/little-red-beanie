@@ -13,16 +13,17 @@ export function buildCtxHeader(s: AppState): string {
       return `[CTX phase=1 name=${s.name ?? 'null'} age=${s.age ?? 'null'} ${escalated}]`
 
     case 2:
+      // Auto-fill flow — the puppet only needs the color word and the name.
+      // Coverage / pace / idle_secs are app-internal and were being read aloud.
       return (
         `[CTX phase=2 name=${s.name} age=${s.age} ` +
-        `color=${s.colorName ?? 'null'} coverage=${s.coverage.toFixed(2)} ` +
-        `pace=${s.pace} idle_secs=${s.idleSecs} ${escalated}]`
+        `color=${s.colorName ?? 'null'} filled=${esc(s.coverage >= 1)} ${escalated}]`
       )
 
     case 3:
       return (
         `[CTX phase=3 name=${s.name} age=${s.age} ` +
-        `color=${s.colorName} face_now=${s.faceNow} secs_on_face=${s.secsOnFace} ` +
+        `color=${s.colorName} face_now=${s.faceNow} ` +
         `tapped_face=${s.tappedFace ?? 'null'} ${escalated}]`
       )
 
@@ -30,7 +31,7 @@ export function buildCtxHeader(s: AppState): string {
       return (
         `[CTX phase=4 name=${s.name} age=${s.age} ` +
         `color=${s.colorName} chosen_face=${s.tappedFace} ` +
-        `silence_secs=${s.silenceSecs} child_words="${s.childWords}" ` +
+        `child_words="${s.childWords}" ` +
         `tone_markers=${s.toneMarkers} reopened=${esc(s.reopened)} ${escalated}]`
       )
 
@@ -39,8 +40,7 @@ export function buildCtxHeader(s: AppState): string {
         `[CTX phase=5 name=${s.name} age=${s.age} ` +
         `color=${s.colorName} chosen_face=${s.tappedFace} ` +
         `topic=${s.topic ? `"${s.topic}"` : 'null'} ` +
-        `offer_made=${esc(s.offerMade)} child_words="${s.childWords}" ` +
-        `silence_secs=${s.silenceSecs} ${escalated}]`
+        `offer_made=${esc(s.offerMade)} child_words="${s.childWords}" ${escalated}]`
       )
   }
 }

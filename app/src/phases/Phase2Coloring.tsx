@@ -13,7 +13,7 @@ const FILL_DELAY_MS = 1200
 
 // Total time the color stays on screen before Phase 3 takes over. Includes
 // the fill delay above plus room for the puppet's short mirror to land.
-const ADVANCE_DELAY_MS = 3000
+const ADVANCE_DELAY_MS = 2000
 
 export default function Phase2Coloring() {
   const color = useAppStore((s) => s.color)
