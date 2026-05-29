@@ -14,7 +14,8 @@ export interface AppState {
 
   // Phase 2 — Coloring
   color: string | null            // hex, e.g. "#000000"
-  colorHsl: string | null         // "hsl(0, 0%, 5%)"
+  colorHsl: string | null         // "hsl(0, 0%, 5%)" — internal only, never in CTX
+  colorName: string | null        // human-readable, e.g. "green" — used in CTX
   coverage: number                 // 0..1, 1.0 once tap-to-fill animation done
   pace: ColoringPace
   idleSecs: number
@@ -44,7 +45,7 @@ export interface AppState {
   setPhase: (phase: Phase) => void
   setName: (name: string) => void
   setAge: (age: number) => void
-  pickColor: (hex: string, hsl: string) => void
+  pickColor: (hex: string, hsl: string, name: string) => void
   finishColoring: () => void
   cycleFace: (face: FaceExpression) => void
   tapFace: (face: FaceExpression) => void
@@ -62,6 +63,7 @@ const initial = {
   age: null,
   color: null,
   colorHsl: null,
+  colorName: null,
   coverage: 0,
   pace: 'empty' as ColoringPace,
   idleSecs: 0,
@@ -86,7 +88,7 @@ export const useAppStore = create<AppState>((set) => ({
   setPhase: (phase) => set({ phase }),
   setName: (name) => set({ name }),
   setAge: (age) => set({ age }),
-  pickColor: (hex, hsl) => set({ color: hex, colorHsl: hsl }),
+  pickColor: (hex, hsl, name) => set({ color: hex, colorHsl: hsl, colorName: name }),
   finishColoring: () => set({ coverage: 1.0, idleSecs: 5 }),
   cycleFace: (face) => set({ faceNow: face, secsOnFace: 0 }),
   tapFace: (face) => set({ tappedFace: face }),

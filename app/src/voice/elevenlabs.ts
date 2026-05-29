@@ -78,17 +78,18 @@ export async function startVoiceSession() {
         } else if (s.phase === 2 && !s.color) {
           // Voice-pick of a clothing color: match the spoken word against
           // our 6-swatch palette + common synonyms. First hit wins.
-          const VOICE_COLORS: Array<[RegExp, string, string]> = [
-            [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)'],
-            [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)'],
-            [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)'],
-            [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)'],
-            [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)'],
-            [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)'],
+          // The `name` is what the puppet will say back ("You picked green.").
+          const VOICE_COLORS: Array<[RegExp, string, string, string]> = [
+            [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)',   'black' ],
+            [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)',   'red'   ],
+            [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)',  'gold'  ],
+            [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)', 'green' ],
+            [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)', 'blue'  ],
+            [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)', 'plum'  ],
           ]
-          for (const [re, hex, hsl] of VOICE_COLORS) {
+          for (const [re, hex, hsl, name] of VOICE_COLORS) {
             if (re.test(message)) {
-              useAppStore.getState().pickColor(hex, hsl)
+              useAppStore.getState().pickColor(hex, hsl, name)
               break
             }
           }

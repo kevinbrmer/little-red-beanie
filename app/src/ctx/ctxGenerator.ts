@@ -15,21 +15,21 @@ export function buildCtxHeader(s: AppState): string {
     case 2:
       return (
         `[CTX phase=2 name=${s.name} age=${s.age} ` +
-        `color=${s.colorHsl ?? 'null'} coverage=${s.coverage.toFixed(2)} ` +
+        `color=${s.colorName ?? 'null'} coverage=${s.coverage.toFixed(2)} ` +
         `pace=${s.pace} idle_secs=${s.idleSecs} ${escalated}]`
       )
 
     case 3:
       return (
         `[CTX phase=3 name=${s.name} age=${s.age} ` +
-        `color=${s.colorHsl} face_now=${s.faceNow} secs_on_face=${s.secsOnFace} ` +
+        `color=${s.colorName} face_now=${s.faceNow} secs_on_face=${s.secsOnFace} ` +
         `tapped_face=${s.tappedFace ?? 'null'} ${escalated}]`
       )
 
     case 4:
       return (
         `[CTX phase=4 name=${s.name} age=${s.age} ` +
-        `color=${s.colorHsl} chosen_face=${s.tappedFace} ` +
+        `color=${s.colorName} chosen_face=${s.tappedFace} ` +
         `silence_secs=${s.silenceSecs} child_words="${s.childWords}" ` +
         `tone_markers=${s.toneMarkers} reopened=${esc(s.reopened)} ${escalated}]`
       )
@@ -37,7 +37,7 @@ export function buildCtxHeader(s: AppState): string {
     case 5:
       return (
         `[CTX phase=5 name=${s.name} age=${s.age} ` +
-        `color=${s.colorHsl} chosen_face=${s.tappedFace} ` +
+        `color=${s.colorName} chosen_face=${s.tappedFace} ` +
         `topic=${s.topic ? `"${s.topic}"` : 'null'} ` +
         `offer_made=${esc(s.offerMade)} child_words="${s.childWords}" ` +
         `silence_secs=${s.silenceSecs} ${escalated}]`

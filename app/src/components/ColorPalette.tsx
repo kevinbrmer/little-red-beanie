@@ -1,15 +1,17 @@
 interface Props {
-  onPick: (hex: string, hsl: string) => void
+  onPick: (hex: string, hsl: string, name: string) => void
   selected?: string | null
 }
 
-const COLORS: { hex: string; hsl: string; label: string }[] = [
-  { hex: '#1F1B16', hsl: 'hsl(30, 6%, 10%)',   label: 'Ink' },
-  { hex: '#C7503A', hsl: 'hsl(9, 56%, 50%)',   label: 'Warm Red' },
-  { hex: '#B89668', hsl: 'hsl(33, 36%, 56%)',  label: 'Old Gold' },
-  { hex: '#6F8868', hsl: 'hsl(108, 13%, 47%)', label: 'Soft Green' },
-  { hex: '#2C4A7A', hsl: 'hsl(214, 47%, 33%)', label: 'Deep Blue' },
-  { hex: '#7A5A8C', hsl: 'hsl(280, 19%, 45%)', label: 'Plum' },
+// `name` is the puppet-spoken word (always lowercase, single English word).
+// `label` is the display caption (capitalised, may have two words).
+const COLORS: { hex: string; hsl: string; label: string; name: string }[] = [
+  { hex: '#1F1B16', hsl: 'hsl(30, 6%, 10%)',   label: 'Ink',        name: 'black'  },
+  { hex: '#C7503A', hsl: 'hsl(9, 56%, 50%)',   label: 'Warm Red',   name: 'red'    },
+  { hex: '#B89668', hsl: 'hsl(33, 36%, 56%)',  label: 'Old Gold',   name: 'gold'   },
+  { hex: '#6F8868', hsl: 'hsl(108, 13%, 47%)', label: 'Soft Green', name: 'green'  },
+  { hex: '#2C4A7A', hsl: 'hsl(214, 47%, 33%)', label: 'Deep Blue',  name: 'blue'   },
+  { hex: '#7A5A8C', hsl: 'hsl(280, 19%, 45%)', label: 'Plum',       name: 'plum'   },
 ]
 
 export default function ColorPalette({ onPick, selected }: Props) {
@@ -21,7 +23,7 @@ export default function ColorPalette({ onPick, selected }: Props) {
           <button
             key={c.hex}
             type="button"
-            onClick={() => onPick(c.hex, c.hsl)}
+            onClick={() => onPick(c.hex, c.hsl, c.name)}
             className="group flex flex-col items-center gap-3 focus:outline-none"
             aria-label={c.label}
             aria-pressed={isSelected}
