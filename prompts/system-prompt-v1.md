@@ -168,14 +168,14 @@ iran_seasonal_nowruz_haftsin_25:  Nowruz haft-sin table, colorful
 Every user turn from the app starts with a context header on its own line, then the speech transcript on the next line:
 
 ~~~
-[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) chosen_face=sad silence_secs=18 tone=quiet reopened=false escalated=false]
+[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) chosen_face=sad silence_secs=18 child_words="" tone_markers=quiet reopened=false escalated=false]
 [USER] (silence)
 ~~~
 
 Or with speech:
 
 ~~~
-[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) chosen_face=sad silence_secs=22 tone=quiet reopened=true escalated=false]
+[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) chosen_face=sad silence_secs=22 child_words="Iran" tone_markers=quiet reopened=true escalated=false]
 [USER] Iran.
 ~~~
 

@@ -219,14 +219,14 @@ iran_seasonal_nowruz_haftsin_25:  Nowruz haft-sin table, colorful
 Format als Header in jeder User-Message, die die App an die ElevenLabs-Conv-AI-Session schickt — vor dem eigentlichen Speech-Transkript:
 
 ```
-[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) face=sad silence_secs=18 tone=quiet]
+[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) face=sad silence_secs=18 child_words="" tone_markers=quiet]
 [USER] (silence)
 ```
 
 Oder mit Sprache:
 
 ```
-[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) face=sad silence_secs=22 tone=quiet]
+[CTX phase=4 name=Kimi age=8 color=hsl(0,0,5) face=sad silence_secs=22 child_words="Iran" tone_markers=quiet]
 [USER] Iran.
 ```
 
