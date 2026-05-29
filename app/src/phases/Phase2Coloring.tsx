@@ -38,7 +38,7 @@ export default function Phase2Coloring() {
         setPhase(3)
         sendCtxUpdate()
       }
-    }, 4500)
+    }, 3000)
     return () => clearTimeout(t)
   }
 

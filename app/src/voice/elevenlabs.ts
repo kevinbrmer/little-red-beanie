@@ -44,25 +44,16 @@ export async function startVoiceSession() {
         const s = useAppStore.getState()
         useAppStore.getState().setChildWords(message)
         if (s.phase === 1) {
+          // FIXED-SCENARIO RULE: For the pitch demo, Kimi (age 8) is the only
+          // child the puppet ever meets. We treat any speech that arrives in
+          // Phase 1 as confirmation of either step in the onboarding script —
+          // never reading the spoken content. This frees the demo from STT
+          // noise (background lectures, ambient audio) and keeps the puppet
+          // saying "Kimi" / "eight" consistently.
           if (!s.name) {
-            const first = message.trim().split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '')
-            if (first && first.length >= 2) useAppStore.getState().setName(first)
+            useAppStore.getState().setName('Kimi')
           } else if (!s.age) {
-            const wordToNum: Record<string, number> = {
-              six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
-            }
-            const num = message.match(/\b(\d{1,2})\b/)?.[1]
-            if (num) {
-              useAppStore.getState().setAge(parseInt(num))
-            } else {
-              const lower = message.toLowerCase()
-              for (const [w, n] of Object.entries(wordToNum)) {
-                if (lower.includes(w)) {
-                  useAppStore.getState().setAge(n)
-                  break
-                }
-              }
-            }
+            useAppStore.getState().setAge(8)
           }
         } else if (s.phase === 2 && !s.color) {
           // Voice-pick of a clothing color: match the spoken word against
