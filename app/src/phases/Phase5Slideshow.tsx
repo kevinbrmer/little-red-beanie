@@ -87,7 +87,7 @@ export default function Phase5Slideshow() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.4, ease: EDITORIAL_EASE }}
+      transition={{ duration: 0.8, ease: EDITORIAL_EASE }}
       className="relative h-full w-full overflow-hidden bg-ink"
     >
       <motion.img
@@ -95,7 +95,7 @@ export default function Phase5Slideshow() {
         alt=""
         initial={{ opacity: 0, scale: 1.04 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 2.6, ease: EDITORIAL_EASE }}
+        transition={{ duration: 1.6, ease: EDITORIAL_EASE }}
         className="absolute inset-0 h-full w-full object-cover"
       />
 

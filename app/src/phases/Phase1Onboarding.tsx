@@ -27,13 +27,13 @@ export default function Phase1Onboarding() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 1.2, ease: EDITORIAL_EASE }}
+      transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
       className="flex h-full w-full flex-col items-center justify-center gap-16 px-12"
     >
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: EDITORIAL_EASE }}
+        transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
         className="flex flex-col items-center text-center"
       >
         <span
@@ -65,7 +65,7 @@ export default function Phase1Onboarding() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, delay: 0.4, ease: EDITORIAL_EASE }}
+          transition={{ duration: 0.7, delay: 0.2, ease: EDITORIAL_EASE }}
           className="flex flex-col items-center gap-6"
         >
           <p
@@ -82,7 +82,7 @@ export default function Phase1Onboarding() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, ease: EDITORIAL_EASE }}
+          transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
           className="flex flex-col items-center gap-6"
         >
           <p
@@ -94,7 +94,7 @@ export default function Phase1Onboarding() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.0, delay: 0.6, ease: EDITORIAL_EASE }}
+            transition={{ duration: 0.6, delay: 0.3, ease: EDITORIAL_EASE }}
             className="mt-2 text-base italic text-ink-soft"
             style={{ fontFamily: 'var(--font-display)' }}
           >
@@ -108,7 +108,7 @@ export default function Phase1Onboarding() {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, ease: EDITORIAL_EASE }}
+          transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
           className="text-2xl italic text-ink-soft"
           style={{ fontFamily: 'var(--font-display)' }}
         >
