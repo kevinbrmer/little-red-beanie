@@ -66,49 +66,61 @@ export async function startVoiceSession() {
       console.error('[elevenlabs] error', message, context)
     },
     onMessage: ({ source, message }) => {
-      if (source === 'user') {
-        const s = useAppStore.getState()
-        useAppStore.getState().setChildWords(message)
-        // FIXED-SCENARIO RULE (pitch-variante v1.0): every spoken turn from
-        // Kimi is treated as confirmation of the next scripted step. The STT
-        // content is logged for debugging but NEVER read or used to branch.
-        // This is the only way to keep the demo stable against background
-        // audio, mishearing, and accent.
-        //
-        //   Phase 1 (no name)  → name = "Kimi"
-        //   Phase 1 (no age)   → age  = 8
-        //   Phase 2 (no color) → color = black
-        //   Phase 3 (no tap)   → face = sad
-        //   Phase 4            → child_words = "I miss my home in Iran"
-        //   Phase 5 stage 5a   → child_words = "yes", then auto-trigger 5b
-        if (s.phase === 1) {
-          if (!s.name) {
-            useAppStore.getState().setName('Kimi')
-          } else if (!s.age) {
-            useAppStore.getState().setAge(8)
-          }
-        } else if (s.phase === 2 && !s.color) {
-          useAppStore.getState().pickColor('#1F1B16', 'hsl(30, 6%, 10%)', 'black')
-        } else if (s.phase === 3 && !s.tappedFace) {
-          useAppStore.getState().tapFace('sad')
-        } else if (s.phase === 4) {
-          useAppStore.getState().setChildWords('I miss my home in Iran')
-        } else if (s.phase === 5 && s.activeAssets.length === 0) {
-          useAppStore.getState().setChildWords('yes')
-          // Trigger Stage 5b after a beat so the puppet can speak her short
-          // comfort line before the sea image lands.
-          setTimeout(() => {
-            const cur = useAppStore.getState()
-            if (cur.phase === 5 && cur.activeAssets.length === 0) {
-              cur.setActiveAssets(
-                ['iran_landscape_caspian_shore_02'],
-                ['audio_sea_waves_01', 'audio_iran_music_traditional_01'],
-              )
-            }
-          }, 2500)
-        }
-      }
       console.log(`[${source}]`, message)
+
+      if (source !== 'user') return
+
+      // Filter STT noise. ElevenLabs emits a `user_transcript` event on every
+      // detected turn end — including push-to-talk presses that produced no
+      // real speech, the puppet's own TTS bleed at very low confidence, and
+      // breath/ums. Without this guard a half-second mic-open with nothing
+      // said advances a phase by itself.
+      const trimmed = message.trim().replace(/[.\s,…!?]+$/g, '')
+      if (trimmed.length < 2) {
+        console.log('[user-ignored] empty or too short:', JSON.stringify(message))
+        return
+      }
+
+      const s = useAppStore.getState()
+      useAppStore.getState().setChildWords(message)
+
+      // FIXED-SCENARIO RULE (pitch-variante v1.0). Every Kimi voice turn is a
+      // confirmation pulse — the STT content is logged but never read. Each
+      // branch is idempotent (`!field` guard) so a second push-to-talk in
+      // the same phase does not double-advance or overwrite.
+      //
+      //   Phase 1 step 1 (no name) → name = "Kimi"
+      //   Phase 1 step 2 (no age)  → age  = 8
+      //   Phase 2 (no color)       → color = black
+      //   Phase 3 (no tap)         → face = sad
+      //   Phase 4 (no topic)       → child_words = "I miss my home in Iran"
+      //   Phase 5 (no assets)      → child_words = "yes", deferred set 5b
+      if (s.phase === 1) {
+        if (!s.name) {
+          useAppStore.getState().setName('Kimi')
+        } else if (!s.age) {
+          useAppStore.getState().setAge(8)
+        }
+      } else if (s.phase === 2 && !s.color) {
+        useAppStore.getState().pickColor('#1F1B16', 'hsl(30, 6%, 10%)', 'black')
+      } else if (s.phase === 3 && !s.tappedFace) {
+        useAppStore.getState().tapFace('sad')
+      } else if (s.phase === 4 && !s.topic) {
+        useAppStore.getState().setChildWords('I miss my home in Iran')
+      } else if (s.phase === 5 && s.activeAssets.length === 0) {
+        useAppStore.getState().setChildWords('yes')
+        setTimeout(() => {
+          const cur = useAppStore.getState()
+          if (cur.phase === 5 && cur.activeAssets.length === 0) {
+            cur.setActiveAssets(
+              ['iran_landscape_caspian_shore_02'],
+              ['audio_sea_waves_01', 'audio_iran_music_traditional_01'],
+            )
+          }
+        }, 2500)
+      } else {
+        console.log('[user-ignored] phase already advanced past this step')
+      }
     },
   })
 
