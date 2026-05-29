@@ -30,7 +30,7 @@ export default function Phase2Coloring() {
     if (!color || filled) return
     setFilled(true)
     finishColoring()
-    // CSS transition is 1s; advance after 2.5s so puppet can say "great job".
+    // Give Opus room to finish "You did such a great job, Kimi." before we cut.
     // Guard against double-advance: if Opus has already moved the phase
     // forward via advance_phase, this timer must not pull the user back.
     const t = setTimeout(() => {
@@ -38,7 +38,7 @@ export default function Phase2Coloring() {
         setPhase(3)
         sendCtxUpdate()
       }
-    }, 2500)
+    }, 4500)
     return () => clearTimeout(t)
   }
 

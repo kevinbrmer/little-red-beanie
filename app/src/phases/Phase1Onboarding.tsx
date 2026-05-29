@@ -16,7 +16,9 @@ export default function Phase1Onboarding() {
 
   useEffect(() => {
     if (name && age) {
-      const t = setTimeout(() => setPhase(2), 1800)
+      // Give Opus room to finish "Eight years old — that's wonderful." before
+      // we cut to Phase 2. App still advances if Opus does not call advance_phase.
+      const t = setTimeout(() => setPhase(2), 3500)
       return () => clearTimeout(t)
     }
   }, [name, age, setPhase])

@@ -45,7 +45,6 @@ export async function startVoiceSession() {
         useAppStore.getState().setChildWords(message)
         if (s.phase === 1) {
           if (!s.name) {
-            // crude: take the first word, strip punctuation
             const first = message.trim().split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '')
             if (first && first.length >= 2) useAppStore.getState().setName(first)
           } else if (!s.age) {
@@ -63,6 +62,23 @@ export async function startVoiceSession() {
                   break
                 }
               }
+            }
+          }
+        } else if (s.phase === 2 && !s.color) {
+          // Voice-pick of a clothing color: match the spoken word against
+          // our 6-swatch palette + common synonyms. First hit wins.
+          const VOICE_COLORS: Array<[RegExp, string, string]> = [
+            [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)'],
+            [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)'],
+            [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)'],
+            [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)'],
+            [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)'],
+            [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)'],
+          ]
+          for (const [re, hex, hsl] of VOICE_COLORS) {
+            if (re.test(message)) {
+              useAppStore.getState().pickColor(hex, hsl)
+              break
             }
           }
         }

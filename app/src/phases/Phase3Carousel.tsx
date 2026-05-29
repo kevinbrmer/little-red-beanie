@@ -41,6 +41,7 @@ export default function Phase3Carousel() {
     setTapped(true)
     tapFace(faceNow)
     sendCtxUpdate()
+    // Give Opus room to finish "You picked this one, Kimi." before we cut.
     // Guard against double-advance: if Opus has already moved the phase
     // forward via advance_phase, this timer must not pull the user back.
     const t = setTimeout(() => {
@@ -48,7 +49,7 @@ export default function Phase3Carousel() {
         setPhase(4)
         sendCtxUpdate()
       }
-    }, 2000)
+    }, 3500)
     return () => clearTimeout(t)
   }
 
