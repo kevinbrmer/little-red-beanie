@@ -20,6 +20,12 @@ function requireAgentId(): string {
 
 let conversation: Awaited<ReturnType<typeof Conversation.startSession>> | null = null
 
+// Tracks the phase we have already fired a phase-entry trigger for. Guards
+// against React.StrictMode's intentional double-mount in development, which
+// otherwise causes triggerPhaseEntry to send two user-message markers for
+// the same phase and makes the puppet repeat its bridge line.
+let lastTriggeredPhase: number | null = null
+
 export async function startVoiceSession() {
   if (conversation) return conversation
 
@@ -106,6 +112,7 @@ export async function stopVoiceSession() {
   if (!conversation) return
   await conversation.endSession()
   conversation = null
+  lastTriggeredPhase = null
 }
 
 /**
@@ -147,6 +154,14 @@ export function sendCtxUpdate() {
 export function triggerPhaseEntry() {
   if (!conversation) return
   const s = useAppStore.getState()
+  if (lastTriggeredPhase === s.phase) {
+    // StrictMode double-mount, HMR remount, or a stray re-render — the
+    // bridge has already been delivered for this phase. Skip silently so
+    // the puppet does not repeat itself.
+    console.log('[phase-entry skip]', `phase ${s.phase} already triggered`)
+    return
+  }
+  lastTriggeredPhase = s.phase
   const ctx = buildCtxHeader(s)
   console.log('[phase-entry →]', `phase ${s.phase}`)
   conversation.sendContextualUpdate(ctx)
