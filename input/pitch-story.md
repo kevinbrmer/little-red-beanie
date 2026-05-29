@@ -27,19 +27,19 @@ She thinks for a moment, then answers carefully: „Eight."
 
 On the screen, the outline of a little girl appears — dark, curly hair, child-like proportions, clear and strong borders. Above her, in soft, flowing letters, her name: **Kimi**. The figure is only an empty shape — waiting to be filled.
 
-**Little Red Beanie: „Would you like to give yourself a color, Kimi? Which color feels right for you today?"**
+**Little Red Beanie: „Which color feels right for you today, Kimi?"**
 
 Different color fields light up along the edge of the screen — warm, bright, cool tones. Kimi's finger slowly moves past them, until it reaches the black. Carefully, she taps on it.
 
 **Little Red Beanie: „Now color yourself in, Kimi. In your color."**
 
-With calm, circling movements, Kimi traces her finger across the outline. Black fills the little girl figure, layer by layer. She takes her time. The room is quiet. The app keeps the color strictly within the silhouette — the borders are the end; nothing goes past them.
+With a single gentle tap on the silhouette, black slowly fills Kimi's clothing — her hair and skin stay as they are. She takes the moment in. The room is quiet.
 
 **Little Red Beanie: „You did such a great job, Kimi."**
 
-To understand Kimi's feelings better, Little Red Beanie now shows her different facial expressions. Happy, surprised, scared, and sad faces appear one after another on the screen. Softly, the puppet asks: **„Tap on the face that feels like you, Kimi."**
+To understand Kimi's feelings better, Little Red Beanie now changes the silhouette's expression. Her own little figure on the screen — with the black clothes she just chose — cycles through different facial expressions: happy, surprised, scared, and sad. Softly, the puppet asks: **„Tap when you see the face that feels like you, Kimi."**
 
-When the sad face appears, she looks at it for a long time, and finally taps it. **„You picked this one, Kimi."**
+When her silhouette wears the sad expression, she looks at it for a long time, and finally taps it. **„You picked this one, Kimi."**
 
 Little Red Beanie recognizes her sadness, and asks gently: **„Do you want to talk about it, Kimi?"**
 
@@ -59,7 +59,7 @@ Aus der Szene ergeben sich fünf klar abgegrenzte Phasen, die die App technisch 
 
 1. **Onboarding + Personalisierung** — Audio-Begrüßung, Roboter fragt nach Name und Alter (englisch). Die Alters-Frage lockert das Gespräch auf und gibt der Puppe einen warmen Aufhänger. Name wird zum Anker jeder späteren Anrede.
 2. **Selbst-Ausmalen** — Auf dem Bildschirm erscheint die feste Silhouette (kleines iranisches Mädchen mit dunklen Locken, kräftige Rahmenlinien für Finger-Malen) mit dem Namen darüber. Das Kind wählt am Rand eine Farbe und malt die Silhouette mit dem Finger aus. **Übermalen wird software-seitig unterbunden** (Strich-Clipping auf die Silhouetten-Maske) — der Rahmen ist Schluss. „Schwarz" ist Teil der angebotenen Palette.
-3. **Gesichts-Karussell mit Tap-Auswahl** — Vier Gesichtsausdrücke nacheinander; Auswahl per Touch (Tap auf das Gesicht). Keine Voice-Trigger mehr in dieser Phase — „stop" bleibt ausschließlich Veto/Co-Reg-Trigger (Hard Rule #5).
+3. **Gesichts-Karussell mit Tap-Auswahl auf der eigenen Silhouette** — Die Silhouette aus Phase 2 (mit der gewählten Kleidungsfarbe) bleibt stehen; nur der Gesichts-Layer wechselt durch vier Ausdrücke (happy, surprised, scared, sad). Auswahl per Tap, wenn der passende Ausdruck zu sehen ist. Keine Voice-Trigger — „stop" bleibt ausschließlich Veto/Co-Reg-Trigger (Hard Rule #5).
 4. **Sanfte Einladungsfrage** — „Do you want to talk about it, [Name]?" als warm-öffnende Frage. Akzeptiert Schweigen, kurze Antworten oder ganze Sätze.
 5. **Comforting Mirror, zweistufig** — Stage 5a: Echo des Kindes („Iran…") + Comfort-Offer („Would you like to see the sea, [Name]?"). Stage 5b (bei Yes): kuratierte Sea-Bilder aus dem Iran-Asset-Pool + sanftes Wellenrauschen + leise traditionelle iranische Musik. Bei Nein/Stop greift Hard Rule #5 (Co-Regulation); bei Stille kommt eine Fallback-Slideshow ohne Audio.
 
@@ -95,8 +95,8 @@ Aus der Szene ergeben sich fünf klar abgegrenzte Phasen, die die App technisch 
 Aufgrund der 1-Tages-Pitch-Frist wurde der App-Bau auf eine fokussierte Pitch-Variante zugeschnitten. Die kanonische Spec bleibt bestehen für die echte App-Implementierung post-Pitch.
 
 - **Plattform:** Web-PWA (Vite + React + TS + Tailwind) im Chrome-Vollbild auf Android-Tablet — nicht Native Android.
-- **Mal-Mechanik:** **Tap-to-Fill** statt Strich-Clipping. Silhouette als SVG-Pfad, Tap mit gewählter Farbe → komplette Füllung in ~1 s CSS-Animation. Spec-Bruch gegenüber „kein Übermalen" — dafür Story-tragend in 30 Min statt 3 h.
-- **Gesichts-Karussell:** **Tap-Auswahl** statt Voice-„Stop". „Stop" bleibt ausschließlich Veto/Co-Reg-Trigger (Hard Rule #5).
+- **Mal-Mechanik:** **Tap-to-Fill nur auf den Kleidung-Layer**. Silhouette ist ein strukturiertes SVG mit getrennten Layern (`hair`, `skin`, `clothing`, `face`). Tap mit gewählter Farbe → CSS-Animation füllt nur `clothing`; `hair` bleibt schwarz, `skin` bleibt Hautton. Spec-Bruch gegenüber „kein Übermalen, ganze Silhouette" — dafür Story-tragend und visuell schlüssig.
+- **Gesichts-Karussell:** **Tap-Auswahl auf der eigenen Silhouette**. Die in Phase 2 gefärbte Silhouette bleibt — nur der `face`-Layer wechselt durch happy/surprised/scared/sad. Tap, wenn der passende Ausdruck zu sehen ist. „Stop" bleibt ausschließlich Veto/Co-Reg-Trigger.
 - **Phase-4-Frage:** „Do you want to talk about it, [Name]?" statt „What's going on, [Name]?" — warmere Einladung, die Kimi eine vollständige Antwort entlockt.
 - **Phase 5 zweistufig:** Comfort-Offer („Would you like to see the sea, [Name]?") bevor `show_assets` feuert. Methodisch ein Bruch von „keine Interpretation" (Puppe vermutet Trost-Mittel) und „Validation-before-Reflection" (Frage statt Validation zuerst) — bewusste dramaturgische Entscheidung für die Bühne.
 - **Audio in Phase 5b:** Sanftes Wellenrauschen + traditionelle iranische Musik im Hintergrund während der Slideshow. Neue Tool-Signatur `show_assets(ids, audio_ids?)` und neuer Audio-Pool (`prompts/audio-asset-manifest.md`).
