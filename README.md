@@ -26,5 +26,6 @@ die der Demo entsprechend Englisch sind).
 
 ## Status
 
-Stand 2026-05-28: Methoden-Recherche, Story, Tech-Stack-Entscheidung und Voice-Design-Prompt sind durch.
-Noch offen: System-Prompt für Opus 4.7, App-Architektur (Front-End, Mal-Funktion mit Strich-Clipping), Iran-Asset-Pool, 5-Slide-Pitch-Deck.
+Stand 2026-05-29: System-Prompt v1 für Opus 4.7 ([`prompts/system-prompt-v1.md`](prompts/system-prompt-v1.md)) + Eval-Suite mit 14 deterministischen Tests T1–T14 ([`evals/`](evals/)) + Iran-Asset-Manifest als Platzhalter-Pool ([`prompts/iran-asset-manifest.md`](prompts/iran-asset-manifest.md)) + ElevenLabs-Integrations-Checkliste mit T15-Latenz-Check ([`output/elevenlabs-integration-checklist.md`](output/elevenlabs-integration-checklist.md)) sind durch. Methoden-Recherche, Story, Tech-Stack und Voice-Design-Prompt waren bereits vor 2026-05-28 fertig.
+
+Noch offen: App-Architektur (Front-End, Mal-Funktion mit Strich-Clipping), reale Iran-Asset-Beschaffung (Stock-Lizenzen oder eigene Bilder ersetzen die Platzhalter-IDs), 5-Slide-Pitch-Deck, Live-Demo-Skript für die Bühne, ElevenLabs Conv AI Integration (manuell laut Checkliste).

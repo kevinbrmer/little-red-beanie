@@ -114,7 +114,7 @@ Etablierte Symbol-Methode (Sonne/Wolke/Regen/Gewitter) für Emotions-Check-ins. 
 - **App auf dem Bildschirm:** Phasen-gesteuerter Flow (Begrüßung+Personalisierung → Selbst-Ausmalen → Gesichts-Karussell → Frage → Bild-Spiegelung). Vordefinierte Farbpalette + Mal-Funktion innerhalb der Silhouette-Maske; **Strich-Clipping** verhindert Übermalen — der Rahmen ist hart.
 - **Silhouette (fest, eine):** kleines iranisches Mädchen mit dunklen Locken, kindliche Proportionen, **starke Rahmenlinien** für Finger-Malen. Keine Varianten im MVP.
 - **Voice & LLM Stack (entschieden 2026-05-28):** **ElevenLabs Conversational AI** als Voice-Layer (STT + VAD + Turn-Taking + TTS in einem Service). LLM-Backend ist **Opus 4.7** (`claude-opus-4-7`) via Anthropic SDK, eingehängt als LLM-Konfiguration der Conversational-AI-Session. Stimme ist eine **Voice-Design-generierte Custom Voice** (warm, ruhig, leicht heller, kindzugewandt mit leichtem Roboter-Charme).
-- **Sprachen:** Deutsch zwingend (System-Voice Deutsch). Farsi-Anteile optional, z. B. für tröstende Floskeln in Phase 5.
+- **Sprachen:** Pure English (App-UI, Roboter-Dialog, Voice). Kein Deutsch, kein Farsi — siehe System-Prompt Hard Rule #10 in [`prompts/system-prompt-v1.md`](prompts/system-prompt-v1.md).
 - **Latenz-Ziel:** ~700–1000 ms first-audio nach Sprechende des Kindes. Höhere Werte zerstören die Live-Wirkung im Pitch. Architektur-Doku → [`output/tech-stack.md`](output/tech-stack.md).
 - **Iran-Asset-Pool:** Kuratierte Bildersammlung (Landschaften, Straßen, Alltagsmotive, Symbole). Wird vom LLM in Phase 5 kontextbezogen ausgespielt.
 
