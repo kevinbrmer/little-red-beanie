@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate } from '../voice/elevenlabs'
+import { triggerColorConfirm } from '../voice/elevenlabs'
 import ColorPalette from '../components/ColorPalette'
 
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
@@ -33,10 +33,12 @@ export default function Phase2Coloring() {
   // (and previously triggered the SDK crash via tool-call collisions).
   // Phase 2 just renders silhouette + palette and waits for a tap.
 
-  // When the color lands: sync CTX, auto-fill after a short beat, then advance.
+  // When the color lands: confirm it by voice (the colour is tapped, which
+  // produces no user turn, so the puppet would otherwise stay silent and
+  // the scene would stall), sync CTX, auto-fill after a short beat, advance.
   useEffect(() => {
     if (!color) return
-    sendCtxUpdate()
+    triggerColorConfirm()
 
     const fillTimer = setTimeout(() => {
       setFilled(true)
@@ -63,7 +65,7 @@ export default function Phase2Coloring() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
-      className="flex h-full w-full flex-col items-center justify-between py-10"
+      className="flex h-full w-full flex-col items-center justify-center gap-8 py-10"
     >
       {/* Mascot + question */}
       <motion.div
@@ -91,33 +93,35 @@ export default function Phase2Coloring() {
         </p>
       </motion.div>
 
-      {/* Silhouette — hard swap, no fade, no motion. The empty outline is
-          replaced by the filled illustration in a single React render. Both
-          images live at the exact same absolute position. */}
+      {/* Silhouette — both images permanently mounted at the same position
+          (filled is preloaded, so no load-stutter on swap), cross-faded by
+          opacity only. Centered, no y-shift. */}
       <div
-        className="relative h-[58vh] w-[38vh]"
+        className="relative h-[52vh] w-[34vh] shrink-0"
         aria-hidden="true"
       >
         <img
-          src={filled ? '/images/silhouette/filled-black.png' : '/images/silhouette/empty.png'}
+          src="/images/silhouette/empty.png"
           alt=""
-          className="absolute inset-0 h-full w-full"
-          style={{ objectFit: 'contain', objectPosition: 'center top' }}
+          className="absolute inset-0 h-full w-full transition-opacity duration-700 ease-in-out"
+          style={{ objectFit: 'contain', objectPosition: 'center', opacity: filled ? 0 : 1 }}
+        />
+        <img
+          src="/images/silhouette/filled-black.png"
+          alt=""
+          className="absolute inset-0 h-full w-full transition-opacity duration-700 ease-in-out"
+          style={{ objectFit: 'contain', objectPosition: 'center', opacity: filled ? 1 : 0 }}
         />
       </div>
 
-      {/* Palette stays visible until the silhouette is filled */}
-      {!filled && (
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 8 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: EDITORIAL_EASE }}
-          className="flex flex-col items-center gap-3"
-        >
-          <ColorPalette onPick={pickColor} selected={color} />
-        </motion.div>
-      )}
+      {/* Palette keeps its slot (opacity fade, not unmount) so the silhouette
+          never jumps when the colour is chosen. */}
+      <div
+        className="flex flex-col items-center gap-3 transition-opacity duration-500"
+        style={{ opacity: filled ? 0 : 1, pointerEvents: filled ? 'none' : 'auto' }}
+      >
+        <ColorPalette onPick={pickColor} selected={color} />
+      </div>
     </motion.div>
   )
 }

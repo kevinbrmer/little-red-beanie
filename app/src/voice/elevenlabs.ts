@@ -93,14 +93,15 @@ async function doStartVoiceSession() {
 
       if (source !== 'user') return
 
-      // FILTER 1 — our own phase-entry trigger.
-      // triggerPhaseEntry() calls conversation.sendUserMessage("(phase N
-      // entry)") to force a turn. ElevenLabs faithfully echoes that back
-      // as a user_transcript event — and without this filter the fixed-
-      // scenario logic below treats it as Kimi speaking, immediately
-      // sets color=black / face=sad / etc., and the demo races itself.
-      if (/^\s*\(phase \d+ entry\)\s*$/i.test(message)) {
-        console.log('[user-ignored] phase-entry trigger echo')
+      // FILTER 1 — our own injected control markers.
+      // triggerPhaseEntry() and triggerColorConfirm() call
+      // conversation.sendUserMessage("(phase N entry)") / "(color picked)"
+      // to force a turn. ElevenLabs echoes them back as user_transcript
+      // events. Without filtering, "(color picked)" is treated as a second
+      // user turn and the puppet answers the colour confirmation twice —
+      // the "stutter then repeat" after picking a colour.
+      if (/^\s*\((phase \d+ entry|color picked(:[^)]*)?)\)\s*$/i.test(message)) {
+        console.log('[user-ignored] control-marker echo')
         return
       }
 
@@ -115,7 +116,14 @@ async function doStartVoiceSession() {
       }
 
       const s = useAppStore.getState()
-      useAppStore.getState().setChildWords(message)
+      // Only Phases 4 and 5 consume childWords (the open-question answer and
+      // the Phase-5 consent). Setting it in Phases 1-3 leaked stray Phase-3
+      // noise into Phase 4, which then auto-advanced to the sea before Kimi
+      // ever answered "Do you want to talk about it?".
+      if (s.phase >= 4) {
+        console.log(`[p5] childWords set (phase ${s.phase}):`, JSON.stringify(message))
+        useAppStore.getState().setChildWords(message)
+      }
 
       // App reads what Kimi actually said. Sonnet's Hard Rule #11 still
       // hard-codes the spoken replies (always "Kimi", "eight", "black",
@@ -178,6 +186,7 @@ export async function stopVoiceSession() {
   await conversation.endSession()
   conversation = null
   isConnected = false
+  colorConfirmSent = false
   resetTriggerGuard()
 }
 
@@ -207,6 +216,31 @@ export function sendCtxUpdate() {
   const ctx = buildCtxHeader(s)
   console.log('[ctx →]', ctx)
   conversation.sendContextualUpdate(ctx)
+}
+
+// One-shot guard so a colour confirm fires only once per session even
+// under React.StrictMode's double-mount.
+let colorConfirmSent = false
+
+/**
+ * Force the puppet to speak the Phase 2 colour confirmation ("You picked
+ * black. Beautiful."). The colour is usually chosen by TAP, which produces
+ * NO user turn — so without this nudge the puppet stays silent and the
+ * scene stalls. We sync the CTX (so color=<word> is visible) then send a
+ * tiny marker the prompt interprets as "confirm the colour now".
+ */
+export function triggerColorConfirm() {
+  if (!conversation) return
+  if (colorConfirmSent) return
+  colorConfirmSent = true
+  const s = useAppStore.getState()
+  // Use a CONTEXTUAL UPDATE, not a user-message. A user-message is treated
+  // as a real user turn: the agent starts replying ("You…") while the server
+  // is still finalising that turn, then restarts cleanly — the "You-stutter,
+  // pause, full line" Kevin heard. A contextual update injects the cue
+  // without racing a turn, so the agent produces one clean reply.
+  console.log('[color-confirm →]', s.colorName)
+  conversation.sendContextualUpdate(`(color picked: ${s.colorName})`)
 }
 
 /**

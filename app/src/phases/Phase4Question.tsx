@@ -6,19 +6,17 @@ import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase4Question() {
-  const name = useAppStore((s) => s.name)
   const tappedFace = useAppStore((s) => s.tappedFace)
   const childWords = useAppStore((s) => s.childWords)
 
   const setPhase = useAppStore((s) => s.setPhase)
   const [, setSecs] = useState(0)
 
-  // Force Opus to speak the Phase 4 opening question on mount.
-  // Phase 3 → 4 is post-tap (no STT race), so the entry-trigger user
-  // message is safe to send. Opus's Phase 3 reply only carries the
-  // mirror line; the question itself lands in his response to this
-  // (phase 4 entry) trigger.
+  // Force Opus to speak the Phase 4 opening question on mount, and clear any
+  // childWords that leaked in from a prior phase so the advance-to-Phase-5
+  // effect below only fires on a REAL answer spoken here.
   useEffect(() => {
+    useAppStore.setState({ childWords: '', silenceSecs: 0, reopened: false })
     triggerPhaseEntry()
   }, [])
 
@@ -34,9 +32,13 @@ export default function Phase4Question() {
     setSecs(0)
     useAppStore.setState({ silenceSecs: 0, topic: childWords })
     sendCtxUpdate()
+    // Advance to Phase 5 WITHOUT setting offerMade. Phase 5 opens its own
+    // Stage 5a (mascot + "Would you like to see the sea?") and waits for
+    // Kimi's consent there. Setting offerMade here used to skip that whole
+    // question and jump toward the sea image.
     const t = setTimeout(() => {
       if (useAppStore.getState().phase === 4) {
-        useAppStore.setState({ phase: 5, offerMade: true })
+        useAppStore.setState({ phase: 5 })
       }
     }, 5000)
     return () => clearTimeout(t)
@@ -91,7 +93,7 @@ export default function Phase4Question() {
             letterSpacing: '-0.01em',
           }}
         >
-          Do you want to talk about it, {name}?
+          Do you want to talk about it?
         </blockquote>
       </motion.div>
 
@@ -108,17 +110,6 @@ export default function Phase4Question() {
         style={{ objectFit: 'contain' }}
       />
 
-      {childWords && (
-        <motion.figcaption
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
-          className="mx-auto border-l border-old-gold/60 pl-5 text-base italic text-ink-soft text-left max-w-md"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          "{childWords}"
-        </motion.figcaption>
-      )}
     </motion.div>
   )
 }

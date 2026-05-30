@@ -14,16 +14,12 @@ export default function Phase1Onboarding() {
     sendCtxUpdate()
   }, [])
 
-  // CTX-sync after each captured datum so Opus sees the real name / age and
-  // can fire advance_phase per Phase 1 playbook. Without these, the CTX
-  // header keeps reading name=null age=null forever and Opus never advances.
-  useEffect(() => {
-    if (name) sendCtxUpdate()
-  }, [name])
-
-  useEffect(() => {
-    if (age) sendCtxUpdate()
-  }, [age])
+  // NOTE: the per-name / per-age sendCtxUpdate effects were REMOVED. They
+  // fired sendContextualUpdate on the exact tick STT finalised the age/name
+  // turn — the same "message-to-server-right-after-STT" race that crashed
+  // the SDK with the advance_phase tool. They were also pointless: name/age
+  // are hardcoded to Kimi/8, Phase 1→2 is a pure app timer, and Opus speaks
+  // the close+open line inline, not from a mid-phase CTX read.
 
   useEffect(() => {
     if (name && age) {
@@ -68,7 +64,7 @@ export default function Phase1Onboarding() {
             letterSpacing: '-0.018em',
           }}
         >
-          Hi, I'm Little Red Beanie.
+          {name ? 'How old are you?' : "Hi, I'm Little Red Beanie."}
         </h1>
       </motion.div>
 
@@ -89,8 +85,9 @@ export default function Phase1Onboarding() {
         </motion.div>
       )}
 
-      {/* Stage 2 — name captured, waiting for spoken age */}
-      {name && !age && (
+      {/* Stage 2 — name captured, still listening for the spoken age.
+          No name/age echo on screen — only the listening indicator. */}
+      {name && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -103,29 +100,7 @@ export default function Phase1Onboarding() {
             Listening
           </p>
           <ListeningDots />
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: EDITORIAL_EASE }}
-            className="mt-2 text-base italic text-ink-soft"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Hello, {name}.
-          </motion.p>
         </motion.div>
-      )}
-
-      {/* Stage 3 — both captured, gentle confirmation */}
-      {name && age && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
-          className="text-2xl italic text-ink-soft"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          Hello, {name}.
-        </motion.p>
       )}
     </motion.div>
   )

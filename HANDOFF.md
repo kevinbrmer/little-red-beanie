@@ -1,11 +1,20 @@
 # Handoff — Little Red Beanie
 
-> Stand: 2026-05-29, abends. Übergabe vom MacBook auf den Hauptrechner.
-> Letzter Commit: `6eb708b` *(Drop deterministic phase overrides, keep the script in the prompt only)*
+> Stand: 2026-05-30, früh. Kompletter 5-Phasen-Flow läuft Ende-zu-Ende, vom Nutzer bestätigt.
 
 ## Stand in einem Satz
 
-Web-PWA für die Live-Pitch-Demo am 2026-05-30. Endgerät: Android-Tablet im Chrome-Vollbild. Voice-Layer steht (ElevenLabs Conv-AI + Sonnet 4.6), UI ist editorial-luxury (Aesop/Loro-Piana-Stil), 5-Phasen-Flow läuft, Push-to-Talk eingebaut.
+Web-PWA für die Live-Pitch-Demo am 2026-05-30. Endgerät: Android-Tablet im Chrome-Vollbild. Voice-Layer steht (ElevenLabs Conv-AI + **Opus 4.7**, Voice Goofy), kompletter 5-Phasen-Flow läuft sauber durch (vom Nutzer abgenommen), Push-to-Talk eingebaut.
+
+## Stand 2026-05-30 — was jetzt gilt
+
+- **Phasen 1–4 sind FIX** (vom Nutzer eingefroren — nichts mehr ändern ohne explizite Ansage). Phase 5 final repariert.
+- **Kein `advance_phase`-Tool mehr.** Alle Phasenübergänge laufen über App-Timer; nur noch `show_assets` + `mark_escalation` am Agent. Grund: Tool-Call direkt nach STT-Finalisierung crasht das ElevenLabs-SDK (`undefined error_type` → DataChannel-Disconnect).
+- **Flow-Mechanik:** Phase 1→2 App-Timer (3.5s) mit inline close+open; 2→3 App-Timer nach Farb-Fill; 3→4 + 4→5 App-Timer; jede neue Phase außer 1→2 holt die gesprochene Zeile über `(phase N entry)`-Trigger.
+- **Phase 2 Farbe:** Tap **oder** Voice (nur primary words). Bestätigung "You picked X. Beautiful." kommt über **`sendContextualUpdate('(color picked: X)')`** — NICHT `sendUserMessage` (das löste die "You…"-Selbst-Unterbrechung aus).
+- **Phase 5 zweistufig, strikt voice-gated:** 5a stellt per Live-Agent "Would you like to see the sea?" (kein Name), wartet auf gesprochenes "yes"; KEIN Watchdog/Tap/Auto-Advance. 5b zeigt `coast.jpg` ("Coast of Iran, for Kimi") + Ambient-Audio, dann `stopVoiceSession()` (Hard-Stop, Puppe schweigt).
+- **UI:** Maskottchen-Icon (`mascot.png`) als Header auf allen Screens; keine Chapter/Stern-Labels; keine Anzeige von User-Eingaben; Push-to-Talk-Button unsichtbar, nur kleiner roter Aufnahme-Punkt oben links bei gehaltenem SPACE.
+- **Assets:** Silhouette `empty.png`/`filled-black.png` (transparent, Opacity-Crossfade), 5 Face-PNGs `faces-large/` (balanced/happy/sad/scared/angry), `coast.jpg`.
 
 ## Heutige Session — die wichtigen Schritte
 
@@ -36,9 +45,11 @@ npm run dev  # http://localhost:5173
 ## `.env.local` (NICHT im Repo, gitignored)
 
 ```env
-ELEVENLABS_API_KEY=sk_55bbd246a7711f2ea36f8a5b292a8161ec50bbb8be1c4b8e
-VITE_ELEVENLABS_AGENT_ID=agent_9701kssn7fy7fbsvxzz3tegkd6hd
+ELEVENLABS_API_KEY=<dein-elevenlabs-key>
+VITE_ELEVENLABS_AGENT_ID=agent_6901ksvqwxtvfrxtbz43hpd0hbsj
 ```
+
+> **Account-Wechsel 2026-05-30:** Der ursprüngliche ElevenLabs-Account war quota-erschöpft (Crash `undefined error_type` mitten in der Demo = "This request exceeds your quota limit", server-seitig bestätigt). Neuer Account (tier=creator, frisches Guthaben) → neuer Agent **`agent_6901ksvqwxtvfrxtbz43hpd0hbsj`** ("Little Red Beanie") per API neu angelegt mit identischen Settings (Opus 4.7, Voice Goofy `BRruTxiLM2nszrcCIpz1`, eleven_flash_v2, latency 3, turn patient/7s, Tools show_assets+mark_escalation, auth disabled). Key liegt nur in `.env.local` (gitignored) — den richtigen Key beim Wiedereinstieg eintragen.
 
 Anthropic-API-Key wird hier NICHT mehr direkt verwendet — der Agent läuft mit dem LLM-Backend, das in der ElevenLabs-Konfiguration gesetzt ist (siehe unten).
 
