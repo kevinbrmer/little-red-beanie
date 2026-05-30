@@ -1,0 +1,15 @@
+node_modules
+dist
+.vite
+.vite-temp
+.env
+.env.local
+.env.example
+.new_agent_id.txt
+*.log
+.DS_Store
+
+# Test / dev tooling — keep the build context small.
+.git
+.gitignore
+.eslintcache
