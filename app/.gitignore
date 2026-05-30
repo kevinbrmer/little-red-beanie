@@ -4,3 +4,4 @@ dist/
 .env
 *.log
 .DS_Store
+.new_agent_id.txt
