@@ -14,10 +14,26 @@ export default function Phase1Onboarding() {
     sendCtxUpdate()
   }, [])
 
+  // CTX-sync after each captured datum so Opus sees the real name / age and
+  // can fire advance_phase per Phase 1 playbook. Without these, the CTX
+  // header keeps reading name=null age=null forever and Opus never advances.
+  useEffect(() => {
+    if (name) sendCtxUpdate()
+  }, [name])
+
+  useEffect(() => {
+    if (age) sendCtxUpdate()
+  }, [age])
+
   useEffect(() => {
     if (name && age) {
-      // Give Opus room to finish "Eight years old — that's wonderful." before
-      // we cut to Phase 2. App still advances if Opus does not call advance_phase.
+      // Primary advance path: the app drives Phase 1 → 2 on a timer.
+      // Opus does NOT call advance_phase from Phase 1 — tool calls
+      // landing during STT finalisation race with the server's
+      // post-tool LLM call and crash the SDK ("undefined error_type").
+      // 3.5s is enough for Opus to speak the combined Phase-1-close +
+      // Phase-2-open line ("Eight years old — that's wonderful. — Which
+      // color feels right today?") before the page swap.
       const t = setTimeout(() => setPhase(2), 3500)
       return () => clearTimeout(t)
     }
@@ -36,12 +52,13 @@ export default function Phase1Onboarding() {
         transition={{ duration: 0.7, ease: EDITORIAL_EASE }}
         className="flex flex-col items-center text-center"
       >
-        <span
-          className="mb-6 text-xs uppercase tracking-[0.42em] text-old-gold"
+        <img
+          src="/images/mascot.png"
+          alt=""
           aria-hidden="true"
-        >
-          Chapter I
-        </span>
+          className="mb-5 h-24 w-24"
+          style={{ objectFit: 'contain' }}
+        />
         <h1
           className="text-5xl italic leading-tight text-ink"
           style={{
@@ -53,11 +70,6 @@ export default function Phase1Onboarding() {
         >
           Hi, I'm Little Red Beanie.
         </h1>
-        <div
-          className="mt-8 h-px w-16"
-          style={{ backgroundColor: 'var(--color-mist)' }}
-          aria-hidden="true"
-        />
       </motion.div>
 
       {/* Stage 1 — waiting for spoken name */}

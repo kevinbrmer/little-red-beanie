@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAppStore } from './state/appStore'
 import { startVoiceSession } from './voice/elevenlabs'
@@ -25,15 +26,32 @@ export default function App() {
   const phase = useAppStore((s) => s.phase)
   const sessionStarted = useAppStore((s) => s.sessionStarted)
   const escalated = useAppStore((s) => s.escalated)
+  // Local guard against double-tap on the Tap-to-begin overlay. The store's
+  // sessionStarted flips only after onConnect fires (~600 ms), so a second
+  // tap can land before sessionStarted goes true. isStarting blocks the
+  // second click client-side, and startVoiceSession's startingPromise
+  // blocks any further concurrent calls in the voice layer.
+  const [isStarting, setIsStarting] = useState(false)
 
   const PhaseComponent = phaseComponents[phase]
 
   if (!sessionStarted) {
+    const handleStart = async () => {
+      if (isStarting) return
+      setIsStarting(true)
+      try {
+        await startVoiceSession()
+      } catch (err) {
+        console.error('[app] startVoiceSession failed', err)
+        setIsStarting(false)
+      }
+    }
     return (
       <button
         type="button"
-        onClick={() => startVoiceSession()}
-        className="relative flex h-screen w-screen flex-col items-center justify-center bg-cream focus:outline-none"
+        onClick={handleStart}
+        disabled={isStarting}
+        className="relative flex h-screen w-screen flex-col items-center justify-center bg-cream focus:outline-none disabled:cursor-default"
         aria-label="Tap to begin"
       >
         <motion.div
@@ -42,13 +60,13 @@ export default function App() {
           transition={{ duration: 0.9, ease: EDITORIAL_EASE }}
           className="flex flex-col items-center"
         >
-          <span
-            className="mb-10 text-3xl text-old-gold"
+          <img
+            src="/images/mascot.png"
+            alt=""
             aria-hidden="true"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            ❋
-          </span>
+            className="mb-8 h-24 w-24"
+            style={{ objectFit: 'contain' }}
+          />
 
           <h1
             className="font-display text-7xl italic leading-none text-ink"

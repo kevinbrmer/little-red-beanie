@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
+import { sendCtxUpdate } from '../voice/elevenlabs'
 import { startAmbientAudio, stopAmbientAudio } from '../voice/audioFallback'
-import KimiSilhouette from '../components/KimiSilhouette'
 
-const STAGE_5A_OFFER_DELAY_MS = 5000
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 const SEA_HERO = '/images/iran/sea_hero.jpg'
@@ -13,22 +11,18 @@ const AMBIENT_AUDIO_IDS = ['audio_sea_waves_01', 'audio_iran_music_traditional_0
 
 export default function Phase5Slideshow() {
   const name = useAppStore((s) => s.name)
-  const color = useAppStore((s) => s.color)
   const tappedFace = useAppStore((s) => s.tappedFace)
   const activeAssets = useAppStore((s) => s.activeAssets)
   const activeAudio = useAppStore((s) => s.activeAudio)
   const offerMade = useAppStore((s) => s.offerMade)
-  const setOfferMade = useAppStore((s) => s.setOfferMade)
 
-  // Stage 5a → 5b transition: agent calls show_assets, activeAssets populates.
+  // No entry trigger: Opus already spoke Stage 5a (echo + offer) inline
+  // in his Phase 4 → 5 reply. offerMade was set by Phase 4's advance
+  // timer, so on mount we are already in the consent-waiting state. Just
+  // sync the CTX so Opus's next turn (Kimi's "yes") sees the new phase.
   useEffect(() => {
-    triggerPhaseEntry()
-    const t = setTimeout(() => {
-      setOfferMade(true)
-      sendCtxUpdate()
-    }, STAGE_5A_OFFER_DELAY_MS)
-    return () => clearTimeout(t)
-  }, [setOfferMade])
+    sendCtxUpdate()
+  }, [])
 
   const inStage5b = activeAssets.length > 0
 
@@ -71,7 +65,7 @@ export default function Phase5Slideshow() {
         transition={{ duration: 0.9, ease: EDITORIAL_EASE }}
         className="flex h-full w-full flex-col items-center justify-center gap-10 py-10"
       >
-        <div className="relative h-[50vh] w-[34vh]">
+        <div className="relative h-[50vh] w-auto">
           <div
             aria-hidden="true"
             className="absolute inset-0 -m-20 rounded-full"
@@ -81,13 +75,12 @@ export default function Phase5Slideshow() {
               filter: 'blur(12px)',
             }}
           />
-          <div className="relative h-full w-full">
-            <KimiSilhouette
-              clothingColor={color}
-              face={tappedFace ?? 'sad'}
-              showFace={true}
-            />
-          </div>
+          <img
+            src={`/images/faces-large/${tappedFace ?? 'sad'}.png`}
+            alt=""
+            className="relative h-full w-auto"
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         {offerMade && (

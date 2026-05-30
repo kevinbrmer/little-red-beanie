@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 export type Phase = 1 | 2 | 3 | 4 | 5
-export type FaceExpression = 'happy' | 'surprised' | 'scared' | 'sad'
+export type FaceExpression = 'balanced' | 'happy' | 'sad' | 'scared' | 'angry'
 export type ColoringPace = 'hesitant' | 'steady' | 'fast' | 'empty'
 
 export interface AppState {
@@ -67,7 +67,7 @@ const initial = {
   coverage: 0,
   pace: 'empty' as ColoringPace,
   idleSecs: 0,
-  faceNow: 'happy' as FaceExpression,
+  faceNow: 'balanced' as FaceExpression,
   secsOnFace: 0,
   tappedFace: null,
   silenceSecs: 0,

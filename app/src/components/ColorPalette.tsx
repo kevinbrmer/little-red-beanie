@@ -4,14 +4,14 @@ interface Props {
 }
 
 // `name` is the puppet-spoken word (always lowercase, single English word).
-// `label` is the display caption (capitalised, may have two words).
+// `label` is the display caption (capitalised, single plain word — child-readable).
 const COLORS: { hex: string; hsl: string; label: string; name: string }[] = [
-  { hex: '#1F1B16', hsl: 'hsl(30, 6%, 10%)',   label: 'Ink',        name: 'black'  },
-  { hex: '#C7503A', hsl: 'hsl(9, 56%, 50%)',   label: 'Warm Red',   name: 'red'    },
-  { hex: '#B89668', hsl: 'hsl(33, 36%, 56%)',  label: 'Old Gold',   name: 'gold'   },
-  { hex: '#6F8868', hsl: 'hsl(108, 13%, 47%)', label: 'Soft Green', name: 'green'  },
-  { hex: '#2C4A7A', hsl: 'hsl(214, 47%, 33%)', label: 'Deep Blue',  name: 'blue'   },
-  { hex: '#7A5A8C', hsl: 'hsl(280, 19%, 45%)', label: 'Plum',       name: 'plum'   },
+  { hex: '#1F1B16', hsl: 'hsl(30, 6%, 10%)',   label: 'Black',  name: 'black'  },
+  { hex: '#C7503A', hsl: 'hsl(9, 56%, 50%)',   label: 'Red',    name: 'red'    },
+  { hex: '#E0B340', hsl: 'hsl(44, 73%, 57%)',  label: 'Yellow', name: 'yellow' },
+  { hex: '#6F8868', hsl: 'hsl(108, 13%, 47%)', label: 'Green',  name: 'green'  },
+  { hex: '#2C4A7A', hsl: 'hsl(214, 47%, 33%)', label: 'Blue',   name: 'blue'   },
+  { hex: '#7A5A8C', hsl: 'hsl(280, 19%, 45%)', label: 'Purple', name: 'purple' },
 ]
 
 export default function ColorPalette({ onPick, selected }: Props) {

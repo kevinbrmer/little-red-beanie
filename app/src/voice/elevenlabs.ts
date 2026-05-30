@@ -2,6 +2,13 @@ import { Conversation } from '@elevenlabs/client'
 import { useAppStore } from '../state/appStore'
 import { buildCtxHeader } from '../ctx/ctxGenerator'
 import { toolHandlers } from './toolHandler'
+import {
+  shouldSkipTrigger,
+  markTriggered,
+  hasCtxBeenSyncedFor,
+  markCtxSynced,
+  resetTriggerGuard,
+} from './phaseEntryGuard'
 
 /**
  * Lazy env-var resolution so a missing VITE_ELEVENLABS_AGENT_ID does not
@@ -18,17 +25,31 @@ function requireAgentId(): string {
   return id
 }
 
-let conversation: Awaited<ReturnType<typeof Conversation.startSession>> | null = null
-
-// Tracks the phase we have already fired a phase-entry trigger for. Guards
-// against React.StrictMode's intentional double-mount in development, which
-// otherwise causes triggerPhaseEntry to send two user-message markers for
-// the same phase and makes the puppet repeat its bridge line.
-let lastTriggeredPhase: number | null = null
+type Conv = Awaited<ReturnType<typeof Conversation.startSession>>
+let conversation: Conv | null = null
+// In-flight startSession promise. Prevents a second concurrent tap on
+// "Tap to begin" from racing a second ElevenLabs session into existence
+// before the first conversation handle has been assigned — which would
+// otherwise produce the doubled / tripled greeting audio bug.
+let startingPromise: Promise<Conv> | null = null
+// Tracks whether the WebRTC room is currently usable. We do NOT rely on
+// conversation alone — after a disconnect the handle still exists but
+// calling setMicMuted on it spams the SDK's internal console.error
+// ("Cannot set microphone muted: room not connected"). Flip this on
+// onConnect, off onDisconnect.
+let isConnected = false
 
 export async function startVoiceSession() {
   if (conversation) return conversation
+  if (startingPromise) return startingPromise
 
+  startingPromise = doStartVoiceSession().finally(() => {
+    startingPromise = null
+  })
+  return startingPromise
+}
+
+async function doStartVoiceSession() {
   // Request mic permission with constraints tuned to suppress room noise:
   // - noiseSuppression: damp background hum / fan / typing
   // - echoCancellation: keep the puppet's own TTS out of the mic loop
@@ -50,6 +71,7 @@ export async function startVoiceSession() {
     clientTools: toolHandlers,
     onConnect: ({ conversationId }) => {
       console.log('[elevenlabs] connected', conversationId)
+      isConnected = true
       useAppStore.getState().startSession()
       // Push-to-talk: start muted. The PushToTalk component flips this
       // on keydown(Space) / keyup(Space).
@@ -61,6 +83,7 @@ export async function startVoiceSession() {
     },
     onDisconnect: (details) => {
       console.log('[elevenlabs] disconnected', details)
+      isConnected = false
     },
     onError: (message, context) => {
       console.error('[elevenlabs] error', message, context)
@@ -106,40 +129,28 @@ export async function startVoiceSession() {
       // capture the transcript and let the per-phase useEffects in the
       // React components handle the timing.
       if (s.phase === 1) {
+        // Pitch-Variante v1.0: name and age are fixed (Kimi, 8) — same as
+        // Hard Rule #11 in the system prompt. Whatever STT actually
+        // delivered is irrelevant; the first Phase-1 user turn means
+        // "Kimi spoke her name", the second means "Kimi spoke her age".
+        // The CTX values written here must agree with what Opus speaks,
+        // so we hardcode them rather than parse STT.
         if (!s.name) {
-          // First word, stripped to letters. Hard Rule #11 ensures the
-          // puppet replies "Nice to meet you, Kimi." regardless.
-          const first = message.trim().split(/\s+/)[0]?.replace(/[^a-zA-Z]/g, '')
-          if (first && first.length >= 2) {
-            useAppStore.getState().setName(first)
-          }
+          useAppStore.getState().setName('Kimi')
         } else if (!s.age) {
-          const wordToNum: Record<string, number> = {
-            six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
-          }
-          const num = message.match(/\b(\d{1,2})\b/)?.[1]
-          if (num) {
-            useAppStore.getState().setAge(parseInt(num))
-          } else {
-            const lower = message.toLowerCase()
-            for (const [w, n] of Object.entries(wordToNum)) {
-              if (lower.includes(w)) {
-                useAppStore.getState().setAge(n)
-                break
-              }
-            }
-          }
+          useAppStore.getState().setAge(8)
         }
       } else if (s.phase === 2 && !s.color) {
-        // Match against the 6-swatch palette + common synonyms. First hit
-        // wins; the matched name is what shows in the CTX (`color=black`).
+        // Primary colour words only — no synonyms. "dark"/"ink"/"scarlet"
+        // were false-firing on puppet TTS bleed; the exact primary names
+        // are stable enough not to trigger from background context.
         const VOICE_COLORS: Array<[RegExp, string, string, string]> = [
-          [/\b(black|ink|dark)\b/i,         '#1F1B16', 'hsl(30, 6%, 10%)',   'black' ],
-          [/\b(red|crimson|scarlet)\b/i,    '#C7503A', 'hsl(9, 56%, 50%)',   'red'   ],
-          [/\b(gold|yellow|amber|tan)\b/i,  '#B89668', 'hsl(33, 36%, 56%)',  'gold'  ],
-          [/\b(green|olive|sage)\b/i,       '#6F8868', 'hsl(108, 13%, 47%)', 'green' ],
-          [/\b(blue|navy|indigo)\b/i,       '#2C4A7A', 'hsl(214, 47%, 33%)', 'blue'  ],
-          [/\b(plum|purple|violet)\b/i,     '#7A5A8C', 'hsl(280, 19%, 45%)', 'plum'  ],
+          [/\bblack\b/i,  '#1F1B16', 'hsl(30, 6%, 10%)',   'black'  ],
+          [/\bred\b/i,    '#C7503A', 'hsl(9, 56%, 50%)',   'red'    ],
+          [/\byellow\b/i, '#E0B340', 'hsl(44, 73%, 57%)',  'yellow' ],
+          [/\bgreen\b/i,  '#6F8868', 'hsl(108, 13%, 47%)', 'green'  ],
+          [/\bblue\b/i,   '#2C4A7A', 'hsl(214, 47%, 33%)', 'blue'   ],
+          [/\bpurple\b/i, '#7A5A8C', 'hsl(280, 19%, 45%)', 'purple' ],
         ]
         for (const [re, hex, hsl, name] of VOICE_COLORS) {
           if (re.test(message)) {
@@ -166,15 +177,18 @@ export async function stopVoiceSession() {
   if (!conversation) return
   await conversation.endSession()
   conversation = null
-  lastTriggeredPhase = null
+  isConnected = false
+  resetTriggerGuard()
 }
 
 /**
  * Push-to-talk gate. Mic stays muted at rest; the PushToTalk component
- * unmutes only while Kimi holds the talk key.
+ * unmutes only while Kimi holds the talk key. Silently no-ops after a
+ * disconnect so the SDK's internal "room not connected" console.error
+ * does not spam the log every time PushToTalk fires a keyup.
  */
 export function setMicMuted(muted: boolean) {
-  if (!conversation) return
+  if (!conversation || !isConnected) return
   try {
     conversation.setMicMuted(muted)
   } catch (err) {
@@ -208,16 +222,28 @@ export function sendCtxUpdate() {
 export function triggerPhaseEntry() {
   if (!conversation) return
   const s = useAppStore.getState()
-  if (lastTriggeredPhase === s.phase) {
-    // StrictMode double-mount, HMR remount, or a stray re-render — the
-    // bridge has already been delivered for this phase. Skip silently so
-    // the puppet does not repeat itself.
-    console.log('[phase-entry skip]', `phase ${s.phase} already triggered`)
+
+  if (shouldSkipTrigger(s.phase)) {
+    // Opus called advance_phase himself. He already knows we're in the
+    // new phase from the tool call he just made — no client CTX push is
+    // needed. Sending sendContextualUpdate here races against the server
+    // still processing the tool result and triggers the
+    // "undefined error_type" DataChannel disconnect crash. Skip silently;
+    // the next real user turn (Kimi's voice) will land a fresh CTX via
+    // Phase2Coloring's color-useEffect → sendCtxUpdate.
+    console.log('[phase-entry skip]', `phase ${s.phase} — opus-driven, no client push`)
     return
   }
-  lastTriggeredPhase = s.phase
-  const ctx = buildCtxHeader(s)
+
+  // App-driven transition (timer fallback or Phase 2 → 3 auto-advance).
+  // Opus did NOT call advance_phase, so we must both sync CTX and force
+  // a user turn so he speaks the phase opening line.
+  if (!hasCtxBeenSyncedFor(s.phase)) {
+    const ctx = buildCtxHeader(s)
+    conversation.sendContextualUpdate(ctx)
+    markCtxSynced(s.phase)
+  }
+  markTriggered(s.phase)
   console.log('[phase-entry →]', `phase ${s.phase}`)
-  conversation.sendContextualUpdate(ctx)
   conversation.sendUserMessage(`(phase ${s.phase} entry)`)
 }

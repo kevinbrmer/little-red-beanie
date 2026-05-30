@@ -23,7 +23,7 @@ export function buildCtxHeader(s: AppState): string {
     case 3:
       return (
         `[CTX phase=3 name=${s.name} age=${s.age} ` +
-        `color=${s.colorName} face_now=${s.faceNow} ` +
+        `color=${s.colorName} ` +
         `tapped_face=${s.tappedFace ?? 'null'} ${escalated}]`
       )
 

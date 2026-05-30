@@ -2,27 +2,32 @@ import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
 import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
-import KimiSilhouette from '../components/KimiSilhouette'
 
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function Phase4Question() {
   const name = useAppStore((s) => s.name)
-  const color = useAppStore((s) => s.color)
   const tappedFace = useAppStore((s) => s.tappedFace)
   const childWords = useAppStore((s) => s.childWords)
 
   const setPhase = useAppStore((s) => s.setPhase)
-  const [secs, setSecs] = useState(0)
+  const [, setSecs] = useState(0)
 
-  // Force the agent to speak the Phase 4 entry question
+  // Force Opus to speak the Phase 4 opening question on mount.
+  // Phase 3 → 4 is post-tap (no STT race), so the entry-trigger user
+  // message is safe to send. Opus's Phase 3 reply only carries the
+  // mirror line; the question itself lands in his response to this
+  // (phase 4 entry) trigger.
   useEffect(() => {
     triggerPhaseEntry()
   }, [])
 
-  // When child_words lands (voice path: deterministically set to
-  // "I miss my home in Iran"), set the topic, give the puppet room to
-  // speak her validation, then advance to Phase 5.
+  // When child_words lands, set the topic and give Opus room to speak
+  // his validation + Stage-5a echo+offer (also inline), then advance to
+  // Phase 5 on a timer. Opus does NOT call advance_phase here because
+  // tool calls right after STT finalisation race with the server's
+  // post-tool LLM call and crash the SDK. offerMade is set when the
+  // page swaps so Phase 5 mounts already in the consent-waiting state.
   useEffect(() => {
     if (!childWords) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs UI counter to external STT signal
@@ -31,7 +36,7 @@ export default function Phase4Question() {
     sendCtxUpdate()
     const t = setTimeout(() => {
       if (useAppStore.getState().phase === 4) {
-        setPhase(5)
+        useAppStore.setState({ phase: 5, offerMade: true })
       }
     }, 5000)
     return () => clearTimeout(t)
@@ -61,50 +66,24 @@ export default function Phase4Question() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
-      className="relative flex h-full w-full items-center justify-center px-10"
+      className="relative flex h-full w-full flex-col items-center justify-center gap-6 px-10 py-10"
     >
-      {/* Margin illustration — tiny silhouette in lower-left corner */}
-      <div
-        className="pointer-events-none absolute bottom-10 left-10 h-[22vh] w-[14vh] opacity-90"
-        aria-hidden="true"
-      >
-        <KimiSilhouette
-          clothingColor={color}
-          face={tappedFace ?? 'sad'}
-          showFace={true}
-        />
-      </div>
-
-      {/* Quiet meta — top corners */}
-      <div className="pointer-events-none absolute top-8 left-10 text-xs uppercase tracking-[0.28em] text-ink-soft/60">
-        Phase IV
-      </div>
-      <div className="pointer-events-none absolute top-8 right-10 font-mono text-xs tracking-wider text-ink-soft/50">
-        {secs.toString().padStart(2, '0')}s
-      </div>
-
-      {/* The question as a giant pulled quote */}
-      <motion.figure
-        initial={{ opacity: 0, y: 8 }}
+      {/* Mascot + question — same header pattern as Phase 2/3 */}
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.15, ease: EDITORIAL_EASE }}
-        className="relative mx-auto max-w-2xl"
+        transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+        className="flex flex-col items-center text-center"
       >
-        {/* Hanging quotation mark in old gold */}
-        <span
+        <img
+          src="/images/mascot.png"
+          alt=""
           aria-hidden="true"
-          className="absolute -left-2 -top-12 select-none text-[8rem] leading-none text-old-gold/80"
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 400,
-            fontVariationSettings: '"opsz" 144',
-          }}
-        >
-          “
-        </span>
-
+          className="mb-3 h-16 w-16"
+          style={{ objectFit: 'contain' }}
+        />
         <blockquote
-          className="relative text-5xl italic leading-[1.15] text-ink"
+          className="text-3xl italic leading-[1.2] text-ink"
           style={{
             fontFamily: 'var(--font-display)',
             fontVariationSettings: '"opsz" 144',
@@ -114,19 +93,32 @@ export default function Phase4Question() {
         >
           Do you want to talk about it, {name}?
         </blockquote>
+      </motion.div>
 
-        {childWords && (
-          <motion.figcaption
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
-            className="mt-8 border-l border-old-gold/60 pl-5 text-lg italic text-ink-soft"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            “{childWords}”
-          </motion.figcaption>
-        )}
-      </motion.figure>
+      {/* Large embedded face — the face Kimi chose in Phase 3, carried
+          forward and shown continuously. Embedded, not fullscreen. */}
+      <motion.img
+        src={`/images/faces-large/${tappedFace ?? 'sad'}.png`}
+        alt=""
+        aria-hidden="true"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.15, ease: EDITORIAL_EASE }}
+        className="h-[40vh] w-auto"
+        style={{ objectFit: 'contain' }}
+      />
+
+      {childWords && (
+        <motion.figcaption
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
+          className="mx-auto border-l border-old-gold/60 pl-5 text-base italic text-ink-soft text-left max-w-md"
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          "{childWords}"
+        </motion.figcaption>
+      )}
     </motion.div>
   )
 }

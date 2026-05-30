@@ -48,7 +48,7 @@ Agent-ID: `agent_9701kssn7fy7fbsvxzz3tegkd6hd`
 
 | Setting | Wert |
 |---|---|
-| `agent.prompt.llm` | `claude-sonnet-4-6` (vorher Opus 4.7, gewechselt für niedrigere Latenz) |
+| `agent.prompt.llm` | `claude-opus-4-7` (am 2026-05-29 abends von Sonnet 4.6 zurück, weil Sonnet beim `(phase N entry)` Trigger die vorige Phase-Close-Line wiederholt + fälschlich advance_phase in Phase 2 aufgerufen hat + CTX-Header wörtlich gesprochen hat) |
 | `agent.prompt.max_tokens` | 300 |
 | `agent.prompt.prompt` | Inhalt von `prompts/system-prompt-v1.md` (~23 KB) |
 | `agent.first_message` | „Hi there. I am Little Red Beanie. What is your name?" |
@@ -57,7 +57,7 @@ Agent-ID: `agent_9701kssn7fy7fbsvxzz3tegkd6hd`
 | `tts.stability` | 0.5 |
 | `tts.speed` | 1.0 |
 | `tts.similarity_boost` | 0.8 |
-| `tts.optimize_streaming_latency` | 4 (max) |
+| `tts.optimize_streaming_latency` | 3 (war 4, 4 hatte First-Audio-Cutoff auf "Hi") |
 | `turn.turn_timeout` | 1.9 s — Pause nach Sprechende bevor Agent antwortet |
 | `turn.turn_eagerness` | `normal` (vorher `eager` — Varianz war zu hoch) |
 | `turn.speculative_turn` | false (war Quelle für ungleichmäßige Pausen) |

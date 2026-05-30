@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'motion/react'
 import { useAppStore } from '../state/appStore'
-import { sendCtxUpdate, triggerPhaseEntry } from '../voice/elevenlabs'
-import KimiSilhouette from '../components/KimiSilhouette'
+import { sendCtxUpdate } from '../voice/elevenlabs'
 import ColorPalette from '../components/ColorPalette'
 
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
-// After the color lands, give the puppet a beat to say "You picked green.",
-// then auto-fill the silhouette. No tap step.
-const FILL_DELAY_MS = 1200
+// After the color word lands, swap the silhouette to the filled illustration
+// almost immediately. The previous 1.2s "give the puppet a beat to say
+// 'You picked black' first" timing made the fill feel sluggish. Real-time
+// reaction reads better — and Hard Rule #11 already constrains the puppet
+// to wait for CTX color=set, so the mirror line lands naturally afterwards.
+const FILL_DELAY_MS = 300
 
-// Total time the color stays on screen before Phase 3 takes over. Includes
-// the fill delay above plus room for the puppet's short mirror to land.
-// 2s was too tight — cut "You picked black." off mid-line and the Phase 3
-// entry bridge never spoke. 3s restored.
+// Phase 2 → 3 advance happens after the fill so Kimi has a beat to see her
+// new outfit before the face row appears. 3s gives the puppet's full
+// "You picked black. Beautiful." mirror (~2.2s audio + latency) room to
+// land — 2s truncated it.
 const ADVANCE_DELAY_MS = 3000
 
 export default function Phase2Coloring() {
@@ -25,10 +27,11 @@ export default function Phase2Coloring() {
 
   const [filled, setFilled] = useState(false)
 
-  // On mount: force the agent to speak the Phase 2 entry line
-  useEffect(() => {
-    triggerPhaseEntry()
-  }, [])
+  // No entry trigger: Opus already spoke the Phase 2 invite line
+  // ("Which color feels right today?") inline in his Phase 1 → 2 reply.
+  // Forcing a turn here would only push him into a redundant reply
+  // (and previously triggered the SDK crash via tool-call collisions).
+  // Phase 2 just renders silhouette + palette and waits for a tap.
 
   // When the color lands: sync CTX, auto-fill after a short beat, then advance.
   useEffect(() => {
@@ -62,19 +65,20 @@ export default function Phase2Coloring() {
       transition={{ duration: 0.6, ease: EDITORIAL_EASE }}
       className="flex h-full w-full flex-col items-center justify-between py-10"
     >
-      {/* Title block — chapter overline + warm prompt */}
+      {/* Mascot + question */}
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1, ease: EDITORIAL_EASE }}
         className="flex flex-col items-center"
       >
-        <span
-          className="mb-3 text-xs uppercase tracking-[0.42em] text-old-gold"
+        <img
+          src="/images/mascot.png"
+          alt=""
           aria-hidden="true"
-        >
-          Chapter II
-        </span>
+          className="mb-4 h-20 w-20"
+          style={{ objectFit: 'contain' }}
+        />
         <p
           className="text-2xl italic leading-snug text-ink"
           style={{
@@ -85,24 +89,22 @@ export default function Phase2Coloring() {
         >
           Which color feels right today?
         </p>
-        <div
-          className="mt-4 h-px w-12"
-          style={{ backgroundColor: 'var(--color-mist)' }}
-          aria-hidden="true"
-        />
       </motion.div>
 
-      {/* Silhouette — fills automatically once a color is picked */}
-      <motion.div
-        className="h-[58vh] w-[38vh]"
+      {/* Silhouette — hard swap, no fade, no motion. The empty outline is
+          replaced by the filled illustration in a single React render. Both
+          images live at the exact same absolute position. */}
+      <div
+        className="relative h-[58vh] w-[38vh]"
         aria-hidden="true"
       >
-        <KimiSilhouette
-          clothingColor={filled ? color : null}
-          face="happy"
-          showFace={false}
+        <img
+          src={filled ? '/images/silhouette/filled-black.png' : '/images/silhouette/empty.png'}
+          alt=""
+          className="absolute inset-0 h-full w-full"
+          style={{ objectFit: 'contain', objectPosition: 'center top' }}
         />
-      </motion.div>
+      </div>
 
       {/* Palette stays visible until the silhouette is filled */}
       {!filled && (

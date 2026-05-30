@@ -59,51 +59,26 @@ export default function PushToTalk() {
 
   if (!sessionStarted) return null
 
+  // No visible control. Push-to-talk stays bound to SPACE (logic unchanged);
+  // the only on-screen affordance is a small red recording dot that fades in
+  // at the top-left while the mic is actually live (SPACE held).
   return (
-    <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-      <motion.div
-        className="flex items-center gap-3 rounded-full px-5 py-2.5"
-        animate={{
-          backgroundColor: pressed
-            ? 'rgba(184, 150, 104, 0.16)'
-            : 'rgba(31, 27, 22, 0.045)',
-        }}
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        style={{ backdropFilter: 'blur(8px)' }}
-      >
-        <motion.span
-          className="block h-1.5 w-1.5 rounded-full"
-          animate={
-            pressed
-              ? {
-                  backgroundColor: 'var(--color-old-gold)',
-                  scale: [1, 1.4, 1],
-                  opacity: [0.7, 1, 0.7],
-                }
-              : {
-                  backgroundColor: 'var(--color-mist)',
-                  scale: 1,
-                  opacity: 1,
-                }
-          }
-          transition={
-            pressed
-              ? { duration: 0.9, repeat: Infinity, ease: 'easeInOut' }
-              : { duration: 0.25 }
-          }
-        />
-        <motion.span
-          className="text-[10px] uppercase tracking-[0.36em]"
-          animate={{
-            color: pressed
-              ? 'var(--color-old-gold)'
-              : 'var(--color-ink-soft)',
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          {pressed ? 'Listening' : 'Hold space to speak'}
-        </motion.span>
-      </motion.div>
+    <div className="pointer-events-none fixed top-5 left-5 z-50">
+      <motion.span
+        className="block h-3 w-3 rounded-full"
+        style={{ backgroundColor: '#E0362C' }}
+        initial={false}
+        animate={
+          pressed
+            ? { opacity: [0.55, 1, 0.55], scale: [1, 1.18, 1] }
+            : { opacity: 0, scale: 1 }
+        }
+        transition={
+          pressed
+            ? { duration: 1.1, repeat: Infinity, ease: 'easeInOut' }
+            : { duration: 0.3 }
+        }
+      />
     </div>
   )
 }
