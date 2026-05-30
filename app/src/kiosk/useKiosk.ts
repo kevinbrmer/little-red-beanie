@@ -38,7 +38,7 @@ export function useKiosk(): void {
       const orientation = screen.orientation as ScreenOrientation & {
         lock?: (lock: OrientationLockType) => Promise<void>
       }
-      orientation.lock?.('portrait').catch((err) => {
+      orientation.lock?.('landscape').catch((err) => {
         console.warn('[kiosk] orientation.lock failed', err)
       })
     } catch (err) {
