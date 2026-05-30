@@ -2,6 +2,7 @@ import { Conversation } from '@elevenlabs/client'
 import { useAppStore } from '../state/appStore'
 import { buildCtxHeader } from '../ctx/ctxGenerator'
 import { toolHandlers } from './toolHandler'
+import { PUSH_TO_TALK_ENABLED } from '../config'
 import {
   shouldSkipTrigger,
   markTriggered,
@@ -74,11 +75,14 @@ async function doStartVoiceSession() {
       isConnected = true
       useAppStore.getState().startSession()
       // Push-to-talk: start muted. The PushToTalk component flips this
-      // on keydown(Space) / keyup(Space).
-      try {
-        conversation?.setMicMuted(true)
-      } catch (err) {
-        console.warn('[elevenlabs] setMicMuted(true) on connect failed', err)
+      // on keydown / keyup of the configured talk key. When PTT is OFF
+      // we leave the mic open and let ElevenLabs' VAD drive turn-taking.
+      if (PUSH_TO_TALK_ENABLED) {
+        try {
+          conversation?.setMicMuted(true)
+        } catch (err) {
+          console.warn('[elevenlabs] setMicMuted(true) on connect failed', err)
+        }
       }
     },
     onDisconnect: (details) => {

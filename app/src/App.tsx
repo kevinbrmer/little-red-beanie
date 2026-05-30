@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAppStore } from './state/appStore'
 import { startVoiceSession } from './voice/elevenlabs'
+import { useKiosk } from './kiosk/useKiosk'
 import Phase1Onboarding from './phases/Phase1Onboarding'
 import Phase2Coloring from './phases/Phase2Coloring'
 import Phase3Carousel from './phases/Phase3Carousel'
@@ -23,6 +24,7 @@ const phaseComponents = {
 const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 
 export default function App() {
+  useKiosk()
   const phase = useAppStore((s) => s.phase)
   const sessionStarted = useAppStore((s) => s.sessionStarted)
   const escalated = useAppStore((s) => s.escalated)
