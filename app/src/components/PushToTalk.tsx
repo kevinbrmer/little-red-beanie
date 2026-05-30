@@ -99,18 +99,19 @@ export default function PushToTalk() {
         />
       </div>
 
-      {/* Touch PTT pill — bottom-center, large enough for a held thumb.
+      {/* Touch PTT pill — anchored bottom-left so it never overlaps any
+          phase's centered content (Phase 2 palette, Phase 3 carousel, etc.).
           - touchAction: 'none' so the OS does not interpret a long-hold as
             text selection, context menu, or callout.
           - setPointerCapture: any subsequent pointerup/cancel for the same
             pointerId is routed back to this element even if the finger
             slides off the pill — without capture we'd miss the up event
             and the mic would stay open. */}
-      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
+      <div className="pointer-events-none fixed bottom-5 left-5 z-50">
         <motion.button
           type="button"
           aria-label="Hold to speak"
-          className="pointer-events-auto select-none rounded-full border px-10 py-4 text-xs uppercase tracking-[0.32em]"
+          className="pointer-events-auto select-none rounded-full border px-6 py-2.5 text-[11px] uppercase tracking-[0.28em]"
           style={{
             touchAction: 'none',
             backgroundColor: touchPressed ? '#1F1B16' : 'rgba(245, 239, 226, 0.92)',
@@ -139,8 +140,9 @@ export default function PushToTalk() {
         </motion.button>
       </div>
 
-      {/* Keyboard fallback hint — bottom-left, near-invisible */}
-      <div className="pointer-events-none fixed bottom-3 left-3 z-50">
+      {/* Keyboard fallback hint — bottom-right so it does not collide
+          with the pill on the left. Near-invisible by design. */}
+      <div className="pointer-events-none fixed bottom-3 right-3 z-50">
         <span className="text-[10px] uppercase tracking-[0.24em] text-ink-soft/40">
           or hold {PUSH_TO_TALK_LABEL}
         </span>
