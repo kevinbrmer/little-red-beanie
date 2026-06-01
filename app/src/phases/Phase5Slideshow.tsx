@@ -11,12 +11,10 @@ const EDITORIAL_EASE = [0.4, 0, 0.2, 1] as const
 const OFFER_SPEAK_MS = 2800
 
 const SEA_HERO = '/images/iran/coast.jpg'
-const AMBIENT_AUDIO_IDS = ['audio_sea_waves_01', 'audio_iran_music_traditional_01']
 
 export default function Phase5Slideshow() {
   const tappedFace = useAppStore((s) => s.tappedFace)
   const activeAssets = useAppStore((s) => s.activeAssets)
-  const activeAudio = useAppStore((s) => s.activeAudio)
   const offerMade = useAppStore((s) => s.offerMade)
   const childWords = useAppStore((s) => s.childWords)
   const setActiveAssets = useAppStore((s) => s.setActiveAssets)
@@ -73,13 +71,16 @@ export default function Phase5Slideshow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerMade, childWords])
 
-  // Ambient sea + music once the coast is up.
+  // Ambient sea + music — start once on entering 5b, stop only on unmount.
+  // Deliberately NOT keyed on activeAudio: the live agent may fire show_assets
+  // again (optionally without audio_ids), which would zero activeAudio and the
+  // old cleanup-then-skip-restart killed the loop mid-scene. The pitch is one
+  // fixed scene that always wants the loop, and startAmbientAudio is idempotent.
   useEffect(() => {
     if (!inStage5b) return
-    const hasAmbient = activeAudio.some((id) => AMBIENT_AUDIO_IDS.includes(id))
-    if (hasAmbient) startAmbientAudio()
+    startAmbientAudio()
     return () => stopAmbientAudio()
-  }, [inStage5b, activeAudio])
+  }, [inStage5b])
 
   // HARD STOP. Once the coast image is on screen the voice sequence is over.
   // End the ElevenLabs session entirely so the puppet cannot speak, ask, or
