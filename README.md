@@ -86,9 +86,11 @@ Roboter-Zeilen, die der englischen Demo entsprechen).
   Voice-Layer, ElevenLabs-Agent-Settings, bekannte Limitationen.
 - **[`app/`](app/)** — die Web-PWA (React/Vite/TS/Tailwind, Dockerfile,
   nginx-Config, PWA-Shell).
-- **[`prompts/`](prompts/)** — System-Prompt der Puppe
-  ([`system-prompt-v1.md`](prompts/system-prompt-v1.md)) sowie Iran- und
-  Audio-Asset-Manifeste.
+- **[`prompts/`](prompts/)** — System-Prompts der Puppe: der tatsächlich
+  deployte Prompt inkl. Voice-Details
+  ([`system-prompt-elevenlabs.md`](prompts/system-prompt-elevenlabs.md)) und die
+  Arbeitsfassung ([`system-prompt-v1.md`](prompts/system-prompt-v1.md)) sowie
+  Iran- und Audio-Asset-Manifeste.
 - **[`evals/`](evals/)** — deterministische Test-Suite für Dialog-Architektur
   und Sicherheits-Constraints.
 - **[`input/pitch-story.md`](input/pitch-story.md)** — die wörtliche Pitch-Szene
